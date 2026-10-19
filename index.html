@@ -182,6 +182,13 @@ td:first-child,th:first-child{text-align:left}
 .toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--sheet);transition:transform .15s}
 .toggle.on .sw{background:var(--red)}
 .toggle.on .sw::after{transform:translateX(18px)}
+#tdrawer .dpanel{max-height:92dvh;overflow-y:auto}
+#calcSel{display:flex;flex-direction:column;gap:8px}
+.tpicks{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.tpick{min-height:40px;border-radius:9px;background:var(--sheet);border:2px solid var(--rule-strong);font-family:var(--f-display);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
+.tpick.on{background:var(--ink);border-color:var(--ink);color:var(--sheet)}
+.tpicks2{display:flex;gap:18px;flex-wrap:wrap}
+.cap.warn{color:var(--bad)}
 #tdrawer{position:fixed;inset:0;z-index:20;background:rgba(10,16,40,.45);display:flex;align-items:flex-end;justify-content:center}
 .defis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:12px;border-radius:12px;background:var(--ink);color:var(--sheet);min-width:0;transition:transform .12s}
@@ -396,6 +403,12 @@ a.lchip{color:inherit;text-decoration:none}
   <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="tTitle">
     <h3 id="tTitle"></h3>
     <div class="ds" id="tSub"></div>
+    <div id="calcSel" hidden>
+      <div class="mrow"><span>Tables</span><span><button class="link" id="tAll">Toutes</button><button class="link" id="tLow">2 à 10</button><button class="link" id="tHigh">11 à 20</button><button class="link" id="tNone">Aucune</button></span></div>
+      <div class="tpicks" id="tPicks"></div>
+      <div class="tpicks2"><button class="toggle" id="tSq" aria-pressed="true"><span class="sw"></span><span>Carrés</span></button><button class="toggle" id="tCu" aria-pressed="true"><span class="sw"></span><span>Cubes</span></button></div>
+      <p class="cap" id="tSelInfo"></p>
+    </div>
     <div class="durs" id="durs"></div>
     <button class="link" id="tClose">Fermer</button>
   </div>
@@ -559,7 +572,8 @@ function start(opts){
   nextQ();
 }
 function tick(){const left=Math.max(0,G.end-Date.now());$('#hudTimer').textContent=fmtDur(left);$('#hudBar').style.width=(left/G.dur*100)+'%';if(left<=0){clearInterval(G.iv);clearTimeout(G.tid);finish()}}
-function pickItem(t){let tot=0;const ws=t.items.map(it=>{const k=keyOf(t,it);const w=G.recent.includes(k)?.02:weight(k);tot+=w;return w});let r=Math.random()*tot;for(let i=0;i<t.items.length;i++){r-=ws[i];if(r<=0)return t.items[i]}return t.items[t.items.length-1]}
+function pickItem(t){let its=t.items;if(G.filter&&G.filter[t.id]){const f=t.items.filter(G.filter[t.id]);if(f.length)its=f}return pickFrom(t,its)}
+function pickFrom(t,items){let tot=0;const ws=items.map(it=>{const k=keyOf(t,it);const w=G.recent.includes(k)?.02:weight(k);tot+=w;return w});let r=Math.random()*tot;for(let i=0;i<items.length;i++){r-=ws[i];if(r<=0)return items[i]}return items[items.length-1]}
 let padKind='';
 function buildPad(kind){
   if(padKind===kind)return;padKind=kind;const p=$('#pad');p.className='pad '+kind;
@@ -640,7 +654,18 @@ const DEFIS={
   lettres:{name:'Rang des lettres',sub:'Lettre → numéro et numéro → lettre, à taper',glyph:'A·1',themes:['alphabet'],typed:true},
   premiers:{name:'Premier ou pas',sub:'Un maximum de nombres jusqu’à 100',glyph:'p?',themes:['premiers'],typed:false}
 };
-function startDefi(id,min){const d=DEFIS[id];start({mode:'sprint',themes:d.themes,typed:d.typed,dur:min*60000,label:`${d.name} · ${min} min`,bestKey:`defi:${id}:${min}`})}
+const ALLT=range(2,20);
+if(!S.calc)S.calc={tables:ALLT.slice(),sq:true,cu:true};
+function calcSig(){const c=S.calc;const full=c.tables.length===ALLT.length&&c.sq&&c.cu;return full?'':':'+c.tables.slice().sort((a,b)=>a-b).join('.')+(c.sq?'s':'')+(c.cu?'c':'')}
+function defiKey(id,min){return `defi:${id}:${min}`+(id==='calcul'?calcSig():'')}
+function calcThemes(){const c=S.calc,t=[];if(c.tables.length)t.push('tables','tables');if(c.sq)t.push('carres');if(c.cu)t.push('cubes');return t}
+function calcLabel(){const c=S.calc,n=c.tables.length;const parts=[];
+  if(n===ALLT.length)parts.push('toutes les tables');else if(n)parts.push(n<=4?'table'+(n>1?'s':'')+' de '+c.tables.slice().sort((a,b)=>a-b).join(', '):n+' tables');
+  if(c.sq)parts.push('carrés');if(c.cu)parts.push('cubes');return parts.join(' + ')}
+function startDefi(id,min){const d=DEFIS[id];
+  if(id==='calcul'){const th=calcThemes();if(!th.length)return;const sel=new Set(S.calc.tables);
+    start({mode:'sprint',themes:th,typed:true,dur:min*60000,label:`${d.name} · ${min} min`,bestKey:defiKey(id,min),filter:{tables:it=>sel.has(it.a)||sel.has(it.b)}});return}
+  start({mode:'sprint',themes:d.themes,typed:d.typed,dur:min*60000,label:`${d.name} · ${min} min`,bestKey:defiKey(id,min)})}
 let lastLaunch=null;
 function launch(fn,...a){lastLaunch=()=>fn(...a);fn(...a)}
 
@@ -659,7 +684,20 @@ $('#dTyped').onclick=()=>{closeDrawer();launch(startQuiz,[curT.id],curT.name+' �
 let curD=null;
 function renderDefis(){$('#defis').innerHTML=Object.entries(DEFIS).map(([id,d])=>`<button class="dcard" data-d="${id}"><span class="glyph">${d.glyph}</span><span class="tn">${d.name}</span><span class="ts">Record 1 min : <span class="num">${S.best['defi:'+id+':1']||0}</span></span></button>`).join('')}
 $('#defis').onclick=e=>{const b=e.target.closest('.dcard');if(!b)return;curD=b.dataset.d;const d=DEFIS[curD];$('#tTitle').textContent=d.name;$('#tSub').textContent=d.sub;
-  $('#durs').innerHTML=[1,3,5].map(m=>`<button class="btn${m===3?' alt':''}" data-m="${m}"><b>${m}</b>min<small>Record : ${S.best[`defi:${curD}:${m}`]||0}</small></button>`).join('');$('#tdrawer').hidden=false};
+  renderDurs();$('#calcSel').hidden=curD!=='calcul';if(curD==='calcul')renderCalcSel();$('#tdrawer').hidden=false};
+function renderDurs(){const blocked=curD==='calcul'&&!calcThemes().length;
+  $('#durs').innerHTML=[1,3,5].map(m=>`<button class="btn${m===3?' alt':''}" data-m="${m}"${blocked?' disabled':''}><b>${m}</b>min<small>Record : ${S.best[defiKey(curD,m)]||0}</small></button>`).join('')}
+function renderCalcSel(){const c=S.calc;
+  $('#tPicks').innerHTML=ALLT.map(n=>`<button class="tpick${c.tables.includes(n)?' on':''}" data-n="${n}" aria-pressed="${c.tables.includes(n)}">${n}</button>`).join('');
+  $('#tSq').classList.toggle('on',c.sq);$('#tSq').setAttribute('aria-pressed',c.sq);$('#tCu').classList.toggle('on',c.cu);$('#tCu').setAttribute('aria-pressed',c.cu);
+  const th=calcThemes();$('#tSelInfo').textContent=th.length?'Au programme : '+calcLabel():'Choisis au moins une table, les carrés ou les cubes';$('#tSelInfo').classList.toggle('warn',!th.length);renderDurs()}
+$('#tPicks').onclick=e=>{const b=e.target.closest('.tpick');if(!b)return;const n=+b.dataset.n,t=S.calc.tables;S.calc.tables=t.includes(n)?t.filter(x=>x!==n):[...t,n];save();renderCalcSel()};
+$('#tAll').onclick=()=>{S.calc.tables=ALLT.slice();save();renderCalcSel()};
+$('#tNone').onclick=()=>{S.calc.tables=[];save();renderCalcSel()};
+$('#tLow').onclick=()=>{S.calc.tables=range(2,10);save();renderCalcSel()};
+$('#tHigh').onclick=()=>{S.calc.tables=range(11,20);save();renderCalcSel()};
+$('#tSq').onclick=()=>{S.calc.sq=!S.calc.sq;save();renderCalcSel()};
+$('#tCu').onclick=()=>{S.calc.cu=!S.calc.cu;save();renderCalcSel()};
 $('#durs').onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;$('#tdrawer').hidden=true;launch(startDefi,curD,+b.dataset.m)};
 $('#tClose').onclick=()=>{$('#tdrawer').hidden=true};
 $('#tdrawer').onclick=e=>{if(e.target.id==='tdrawer')$('#tdrawer').hidden=true};
