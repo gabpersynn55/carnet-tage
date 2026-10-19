@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Carnet TAGE">
+<meta name="theme-color" content="#F3F6FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1330" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}button{touch-action:manipulation;-webkit-user-select:none;user-select:none}</style>
+<title>Carnet TAGE MAGE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Layout : un cahier Seyès d'une colonne — marge rouge, encre bleue, corrections au stylo rouge manuscrites */
+:root{
+  --paper:#F3F6FC; --sheet:#FFFFFF; --ink:#18286A; --ink-soft:#5A6795;
+  --rule:#D6DFF4; --rule-strong:#B3C2EA; --red:#D5402F; --good:#1C8556; --bad:#C7352A;
+  --chip:#E6EBF8; --chip-strong:#D3DCF3; --shadow:rgba(24,40,106,.10);
+  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-hand:"Caveat","Bradley Hand","Segoe Print",cursive;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1330; --sheet:#141C3F; --ink:#E3E8FF; --ink-soft:#97A2CE;
+  --rule:#222D5A; --rule-strong:#2F3B70; --red:#FF7766; --good:#4CCB90; --bad:#FF6A5C;
+  --chip:#1B2550; --chip-strong:#26326A; --shadow:rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1330; --sheet:#141C3F; --ink:#E3E8FF; --ink-soft:#97A2CE;
+  --rule:#222D5A; --rule-strong:#2F3B70; --red:#FF7766; --good:#4CCB90; --bad:#FF6A5C;
+  --chip:#1B2550; --chip-strong:#26326A; --shadow:rgba(0,0,0,.35); color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+#app{max-width:540px;margin:0 auto;min-height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 36px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Accueil ---------- */
+.masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:800;font-size:30px;letter-spacing:-.02em;line-height:1;text-wrap:balance}
+.brand small{display:block;font-family:var(--f-hand);font-weight:700;color:var(--red);font-size:22px;letter-spacing:0;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.stat{background:var(--sheet);border:1px solid var(--rule-strong);border-radius:10px;padding:10px 12px;min-width:0}
+.stat b{display:block;font-family:var(--f-display);font-size:22px;font-weight:700;line-height:1.1}
+.stat span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:600}
+.bar{height:6px;border-radius:3px;background:var(--chip);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--ink);border-radius:3px;transition:width .4s}
+.bar.red i{background:var(--red)}
+.cta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px;border-radius:12px;background:var(--ink);color:var(--sheet);text-align:left;font-weight:700;font-size:16px;transition:transform .12s}
+.btn small{font-weight:500;font-size:12.5px;opacity:.8}
+.btn.alt{background:var(--red);color:#fff}
+.btn.ghost{background:var(--chip);color:var(--ink)}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.wide{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--ink-soft);margin:26px 0 10px}
+.themes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tcard{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;text-align:left;padding:12px;border-radius:12px;background:var(--sheet);border:1px solid var(--rule-strong);min-width:0;transition:transform .12s,border-color .12s}
+.tcard:hover{border-color:var(--ink-soft)}
+.tcard:active{transform:scale(.97)}
+.glyph{grid-row:1/3;width:40px;height:40px;border-radius:9px;background:var(--chip);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:15px;letter-spacing:-.02em}
+.tcard .tn{font-weight:700;font-size:14.5px;line-height:1.2;min-width:0}
+.tcard .ts{font-size:12px;color:var(--ink-soft);line-height:1.2}
+.tcard .bar{grid-column:1/-1;margin-top:8px}
+.tcard .pct{grid-column:1/-1;font-size:11px;color:var(--ink-soft);font-weight:600;display:flex;justify-content:space-between}
+.foot{margin-top:28px;display:flex;justify-content:center}
+.link{font-size:13px;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;padding:8px}
+
+/* ---------- Jeu ---------- */
+#play{display:flex;flex-direction:column;gap:14px;min-height:calc(100dvh - 54px)}
+.hud{display:flex;align-items:center;gap:10px}
+.x{width:38px;height:38px;border-radius:10px;background:var(--chip);font-size:20px;line-height:1;flex:none}
+.hud .mid{flex:1;min-width:0}
+.hud .tl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.combo{font-family:var(--f-display);font-weight:800;font-size:18px;min-width:52px;text-align:right;color:var(--ink-soft);transition:color .2s}
+.combo.hot{color:var(--red)}
+.timer{font-family:var(--f-display);font-weight:800;font-size:18px;min-width:40px;text-align:right}
+.q{position:relative;background-color:var(--sheet);border-radius:8px;box-shadow:0 1px 0 var(--rule-strong),0 10px 30px var(--shadow);
+  background-image:
+    linear-gradient(90deg,transparent 40px,var(--red) 40px,var(--red) 41.5px,transparent 41.5px),
+    repeating-linear-gradient(to bottom,transparent 0 31px,var(--rule-strong) 31px 32px),
+    repeating-linear-gradient(to bottom,transparent 0 7px,var(--rule) 7px 8px);
+  padding:22px 18px 18px 56px;min-height:230px;display:flex;flex-direction:column;gap:10px}
+.qsub{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft)}
+.qbody{display:flex;align-items:center;gap:16px;flex-wrap:wrap;flex:1}
+.prompt{font-family:var(--f-display);font-weight:800;letter-spacing:-.025em;line-height:1.02;font-size:clamp(46px,15vw,76px);font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere}
+.prompt.m{font-size:clamp(34px,10vw,52px)}
+.prompt.s{font-size:clamp(26px,7.5vw,38px)}
+.blank{display:inline-block;min-width:.9em;padding:0 .12em;border-bottom:.08em solid var(--red);color:var(--red);text-align:center}
+.fix{font-family:var(--f-hand);font-weight:700;font-size:25px;line-height:1.15;color:var(--red);min-height:29px;overflow-wrap:anywhere}
+.fix.ok{color:var(--good)}
+.q.shake{animation:shake .35s}
+.q.pop{animation:pop .3s}
+@keyframes shake{25%{transform:translateX(-7px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+@keyframes pop{50%{transform:scale(1.02)}}
+.grid{display:grid;grid-template-columns:repeat(var(--n),1fr);width:110px;max-width:100%;aspect-ratio:1;border:2px solid var(--ink);flex:none}
+.grid i{border:1px solid var(--ink-soft);background:transparent}
+.grid i.hi{background:var(--red);border-color:var(--red)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choices.long{grid-template-columns:1fr}
+.ch{min-height:64px;padding:12px;border-radius:12px;background:var(--sheet);border:2px solid var(--rule-strong);font-family:var(--f-display);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums;transition:transform .1s,background .15s,border-color .15s;position:relative}
+.choices.long .ch{font-family:var(--f-body);font-size:16px;font-weight:600;text-align:left;min-height:54px}
+.ch:active{transform:scale(.97)}
+.ch .k{position:absolute;top:6px;left:9px;font-size:11px;font-family:var(--f-body);color:var(--ink-soft);font-weight:600}
+.choices.long .ch .k{position:static;margin-right:8px}
+.ch.right{background:var(--good);border-color:var(--good);color:#fff}
+.ch.right .k,.ch.wrong .k{color:#fff}
+.ch.wrong{background:var(--bad);border-color:var(--bad);color:#fff}
+.ch.dim{opacity:.45}
+.nextbar{display:flex;gap:8px}
+.nextbar .btn{flex:1;flex-direction:row;justify-content:center;font-size:16px}
+
+/* ---------- Fin ---------- */
+.endhead{font-family:var(--f-display);font-weight:800;font-size:44px;letter-spacing:-.03em;line-height:1;margin-top:10px;text-wrap:balance}
+.endhand{font-family:var(--f-hand);font-weight:700;font-size:28px;color:var(--red);margin-top:6px}
+.endstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.mist{display:flex;flex-direction:column;gap:6px}
+.mi{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 12px;background:var(--sheet);border:1px solid var(--rule-strong);border-radius:10px}
+.mi .a{font-family:var(--f-display);font-weight:700;font-size:17px;min-width:0;overflow-wrap:anywhere}
+.mi{flex-wrap:wrap}.mi .e{flex-basis:100%;font-size:13.5px;color:var(--ink-soft);line-height:1.35}
+.fixa{display:block;font-size:20px;color:var(--ink);font-family:var(--f-body);font-weight:700;margin-bottom:2px}
+.mi .b{font-family:var(--f-hand);font-weight:700;color:var(--red);font-size:22px;text-align:right;min-width:0;overflow-wrap:anywhere}
+.endcta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+
+/* ---------- Fiche ---------- */
+.sheethead{display:flex;align-items:center;gap:10px}
+.sheethead h2{font-family:var(--f-display);font-weight:800;font-size:26px;margin:0;letter-spacing:-.02em;text-wrap:balance}
+.paper{background:var(--sheet);border:1px solid var(--rule-strong);border-radius:10px;padding:16px;margin-top:14px}
+.paper p{margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 10px;border-radius:8px;background:var(--chip);font-family:var(--f-display);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.chip.r{background:var(--red);color:#fff}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:10px}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;width:100%}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--rule)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:700}
+td:first-child,th:first-child{text-align:left}
+.mult td,.mult th{padding:4px 5px;font-size:12px;text-align:center;border:1px solid var(--rule)}
+.mult th{background:var(--chip);color:var(--ink);font-size:12px;letter-spacing:0}
+.mult td.d{background:var(--chip-strong);font-weight:700}
+.note{font-family:var(--f-hand);font-weight:700;color:var(--red);font-size:22px;line-height:1.15}
+.rule{display:grid;grid-template-columns:42px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.rule b{font-family:var(--f-display);font-size:20px}
+.dbar{display:inline-block;height:10px;background:var(--ink);border-radius:2px;vertical-align:middle}
+
+/* ---------- Tiroir thème ---------- */
+#drawer{position:fixed;inset:0;z-index:20;background:rgba(10,16,40,.45);display:flex;align-items:flex-end;justify-content:center}
+.dpanel{width:100%;max-width:540px;background:var(--paper);border-radius:18px 18px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:.4}}
+.dpanel h3{font-family:var(--f-display);font-weight:800;font-size:24px;margin:0;letter-spacing:-.02em}
+.dpanel .ds{color:var(--ink-soft);font-size:14px;margin-top:-6px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.confirm{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13px}
+#tdrawer{position:fixed;inset:0;z-index:20;background:rgba(10,16,40,.45);display:flex;align-items:flex-end;justify-content:center}
+.defis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:12px;border-radius:12px;background:var(--ink);color:var(--sheet);min-width:0;transition:transform .12s}
+.dcard:active{transform:scale(.97)}
+.dcard .glyph{background:rgba(255,255,255,.14);color:inherit;grid-row:auto}
+.dcard .tn{font-weight:700;font-size:14px;line-height:1.2}
+.dcard .ts{font-size:11.5px;opacity:.75;line-height:1.25}
+.durs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.durs .btn{align-items:center;text-align:center}
+.durs .btn b{font-family:var(--f-display);font-size:26px;line-height:1}
+.typed{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;border-radius:12px;background:var(--sheet);border:2px solid var(--rule-strong);min-height:82px;justify-content:center}
+.typed .tv{font-family:var(--f-display);font-weight:800;font-size:38px;line-height:1.05;min-height:40px}
+.typed .th{font-size:12px;color:var(--ink-soft)}
+.typed.right{border-color:var(--good);background:var(--good);color:#fff}
+.typed.wrong{border-color:var(--bad);background:var(--bad);color:#fff}
+.typed.right .th,.typed.wrong .th{color:#fff}
+.pad{display:grid;gap:8px}
+.pad.num{grid-template-columns:repeat(3,1fr)}
+.pad.letter{grid-template-columns:repeat(7,1fr);gap:6px}
+.pk{min-height:56px;border-radius:12px;background:var(--sheet);border:2px solid var(--rule-strong);font-family:var(--f-display);font-weight:700;font-size:24px;transition:transform .08s,background .1s}
+.pad.letter .pk{min-height:46px;font-size:19px;border-radius:9px;padding:0}
+.pk:active{transform:scale(.94);background:var(--chip)}
+.pk.fn{background:var(--chip)}
+.pk.ok{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.ptitle{font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:-.01em;margin-bottom:10px;text-wrap:balance}
+details.paper summary{cursor:pointer;margin:0}
+.cap{font-size:12.5px;color:var(--ink-soft);margin:10px 0 0!important}
+.shh{font-family:var(--f-display);font-weight:800;font-size:22px;margin:28px 0 -4px;scroll-margin-top:16px}
+a.lchip{color:inherit;text-decoration:none}
+.p100{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;font-variant-numeric:tabular-nums}
+.p100 span{text-align:center;padding:5px 0;font-size:13px;border-radius:4px;color:var(--ink-soft)}
+.p100 span.pr{background:var(--red);color:#fff;font-weight:800}
+.kv{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 14px;font-variant-numeric:tabular-nums}
+.kv.c3{grid-template-columns:repeat(3,1fr)}.kv.c4{grid-template-columns:repeat(4,1fr)}.kv.c1{grid-template-columns:1fr}
+.kv span{padding:5px 0;border-bottom:1px solid var(--rule);font-size:15px;min-width:0}
+.kv b{font-family:var(--f-display);font-weight:800}
+@media (max-width:420px){.kv.c4{grid-template-columns:repeat(2,1fr)}.kv.c3{grid-template-columns:repeat(2,1fr)}}
+.tblocks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.tb{border:1px solid var(--rule-strong);border-radius:8px;padding:8px 10px;min-width:0;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.tb .tbh{margin:0;min-width:44px}
+.tbh{font-family:var(--f-display);font-weight:800;font-size:17px;color:var(--red);margin-bottom:4px}
+.tbg{display:grid;grid-template-columns:repeat(5,1fr);gap:2px 4px;font-variant-numeric:tabular-nums;font-size:14px;font-weight:600}
+.tbg span{display:flex;align-items:baseline;gap:2px;padding:1px 2px;border-radius:3px}
+.tbg span i{font-style:normal;font-size:9px;color:var(--ink-soft);font-weight:500}
+.tbg span.sq{outline:1.5px solid var(--red)}
+.abc{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.abc span{display:flex;flex-direction:column;align-items:center;padding:6px 0;border-radius:6px;background:var(--chip);font-variant-numeric:tabular-nums;font-size:13px}
+.abc span b{font-family:var(--f-display);font-size:20px;line-height:1.1}
+.abc span.r{background:var(--red);color:#fff}
+.imb{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.imb>div{display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:0}
+.imb .grid{width:84px}
+.imb b{font-family:var(--f-display);font-size:18px}
+.imb span{font-size:13px;color:var(--ink-soft)}
+.ex{font-family:var(--f-hand);font-weight:700;color:var(--red);font-size:19px}
+.big{font-size:18px;line-height:1.5}
+.dice td{text-align:center;font-weight:700;padding:6px}
+.dice th{text-align:center}
+.dice td.s7{background:var(--red);color:#fff}
+.dice td.s6,.dice td.s8{background:var(--chip-strong)}
+.months{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.months span{display:flex;flex-direction:column;padding:8px;border-radius:8px;background:var(--chip);font-size:12.5px;min-width:0}
+.months span b{font-family:var(--f-display);font-size:22px;line-height:1}
+.months span.r{background:var(--ink);color:var(--sheet)}
+@media (max-width:380px){.months{grid-template-columns:repeat(3,1fr)}.abc{grid-template-columns:repeat(5,1fr)}}
+.lchips{display:flex;flex-wrap:wrap;gap:6px}
+.lchip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;background:var(--sheet);border:1px solid var(--rule-strong);font-weight:600;font-size:13.5px}
+.lchip .glyph{width:28px;height:28px;border-radius:999px;font-size:11px;grid-row:auto}
+.lchip:active{transform:scale(.96)}
+.lgroups{display:flex;gap:6px;overflow-x:auto;margin-top:14px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.lg{flex:none;padding:7px 12px;border-radius:999px;background:var(--chip);font-weight:600;font-size:13px;white-space:nowrap}
+.lg.on{background:var(--ink);color:var(--sheet)}
+.lmeta{display:flex;align-items:center;gap:10px;margin:12px 0}
+.lmeta span{font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.lmeta .bar{flex:1;margin:0}
+.lcard{width:100%;text-align:left;cursor:pointer;min-height:300px}
+.ltap{font-size:13px;color:var(--ink-soft)}
+.lback{display:flex;flex-direction:column;gap:4px;border-top:2px dashed var(--rule-strong);padding-top:10px}
+.lba{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1.05;color:var(--red);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.lba.s{font-size:24px;line-height:1.2}
+.lbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+@media (max-width:380px){.defis{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <section id="home">
+    <div class="masthead">
+      <div class="brand">Carnet TAGE MAGE<small>par cœur, partout</small></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span>Niveau</span><b class="num" id="sLvl">1</b><div class="bar"><i id="sLvlBar" style="width:0"></i></div></div>
+      <div class="stat"><span>Série</span><b class="num" id="sStreak">0 j</b><div class="bar red"><i id="sStreakBar" style="width:0"></i></div></div>
+      <div class="stat"><span>Aujourd’hui</span><b class="num" id="sToday">0/60</b><div class="bar"><i id="sTodayBar" style="width:0"></i></div></div>
+    </div>
+    <div class="cta">
+      <button class="btn" id="goMix">Révision mixte<small>20 questions, tous thèmes</small></button>
+      <button class="btn alt" id="goSprint">Sprint 60 s<small>Record : <span id="bestMix">0</span></small></button>
+      <button class="btn ghost wide" id="goWeak"><span>Mes points faibles</span><small id="weakN">0 à revoir</small></button>
+    </div>
+    <div class="label">Fiches de révision · tout voir d’un coup d’œil</div>
+    <div class="lchips" id="learnList"></div>
+    <button class="btn ghost wide" id="allSheets" style="margin-top:8px;width:100%"><span>Toutes les fiches sur une page</span><small>12 thèmes</small></button>
+    <div class="label">Défis chrono · 1, 3 ou 5 min</div>
+    <div class="defis" id="defis"></div>
+    <div class="label">Thèmes</div>
+    <div class="themes" id="themes"></div>
+    <div class="foot" id="resetZone"><button class="link" id="resetBtn">Remettre la progression à zéro</button></div>
+  </section>
+
+  <section id="play" hidden>
+    <div class="hud">
+      <button class="x" id="quit" aria-label="Quitter">×</button>
+      <div class="mid"><div class="tl" id="hudLabel">Révision</div><div class="bar"><i id="hudBar" style="width:0"></i></div></div>
+      <div class="timer num" id="hudTimer" hidden>60</div>
+      <div class="combo num" id="hudCombo">×0</div>
+    </div>
+    <div class="q" id="qcard">
+      <div class="qsub" id="qSub"></div>
+      <div class="qbody"><div class="prompt" id="qPrompt"></div><div id="qVis"></div></div>
+      <div class="fix" id="qFix"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="typed" id="typedBox" hidden><span class="tv num" id="typedVal"></span><span class="th" id="typedHint"></span></div>
+    <div class="pad" id="pad" hidden></div>
+    <div class="nextbar" id="nextbar" hidden><button class="btn" id="nextBtn">Suivant</button></div>
+  </section>
+
+  <section id="end" hidden>
+    <div class="endhead" id="endHead"></div>
+    <div class="endhand" id="endHand"></div>
+    <div class="endstats">
+      <div class="stat"><span>Score</span><b class="num" id="eScore">0</b></div>
+      <div class="stat"><span>Réussite</span><b class="num" id="eAcc">0 %</b></div>
+      <div class="stat"><span>XP gagnés</span><b class="num" id="eXp">0</b></div>
+    </div>
+    <div class="label" id="mistLabel">À retenir</div>
+    <div class="mist" id="mist"></div>
+    <div class="endcta">
+      <button class="btn alt" id="eAgain">Rejouer</button>
+      <button class="btn" id="eReview">Revoir mes erreurs</button>
+      <button class="btn ghost wide" id="eHome"><span>Retour au carnet</span></button>
+    </div>
+  </section>
+
+  <section id="learn" hidden>
+    <div class="sheethead"><button class="x" id="learnBack" aria-label="Retour">←</button><h2 id="learnTitle"></h2></div>
+    <div class="lgroups" id="lgroups"></div>
+    <div class="lmeta"><span id="lprog" class="num"></span><div class="bar"><i id="lbar" style="width:0"></i></div></div>
+    <div id="lcardWrap">
+      <button class="q lcard" id="lcard" aria-label="Retourner la carte">
+        <div class="qsub">Recto</div>
+        <div class="qbody"><div class="prompt" id="lfront"></div><div id="lvis"></div></div>
+        <div class="ltap" id="ltap">Touche la carte pour voir la réponse</div>
+        <div class="lback" id="lback" hidden><div class="lba" id="lbackA"></div><div class="fix ok" id="lbackN"></div></div>
+      </button>
+      <div class="lbtns" id="lbtns" hidden>
+        <button class="btn alt" id="lAgain">À revoir<small>elle reviendra</small></button>
+        <button class="btn" id="lKnow">Je sais<small>carte suivante</small></button>
+      </div>
+    </div>
+    <div id="ldone" hidden>
+      <div class="endhand" style="margin-top:18px">Série apprise.</div>
+      <div class="lbtns">
+        <button class="btn" id="lNext">Série suivante</button>
+        <button class="btn ghost" id="lRestart">Recommencer la série</button>
+        <button class="btn alt" id="lQuiz">Me tester<small>quiz de 15 questions</small></button>
+        <button class="btn ghost" id="lSheet">Voir la fiche complète</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="sheet" hidden>
+    <div class="sheethead"><button class="x" id="sheetBack" aria-label="Retour">←</button><h2 id="sheetTitle"></h2></div>
+    <div id="sheetBody"></div>
+    <div class="cta" id="sheetCta" style="margin-top:16px"><button class="btn ghost wide" id="sheetLearn"><span>Apprendre avec les cartes</span><small>une par une</small></button><button class="btn" id="sheetQuiz">M’entraîner</button><button class="btn alt" id="sheetSprint">Sprint 60 s</button></div>
+  </section>
+</div>
+
+<div id="drawer" hidden>
+  <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <h3 id="dTitle"></h3>
+    <div class="ds" id="dSub"></div>
+    <div class="bar"><i id="dBar" style="width:0"></i></div>
+    <div class="dgrid">
+      <button class="btn" id="dQuiz">Quiz<small>15 questions</small></button>
+      <button class="btn alt" id="dSprint">Sprint 60 s<small>Record : <span id="dBest">0</span></small></button>
+      <button class="btn ghost wide" id="dLearn"><span>Apprendre avec les cartes</span><small>sans score</small></button>
+      <button class="btn ghost wide" id="dTyped" hidden><span>Quiz à écrire</span><small>15 questions, sans propositions</small></button>
+      <button class="btn ghost wide" id="dSheet"><span>Ouvrir la fiche</span><small>tout revoir d’un coup d’œil</small></button>
+    </div>
+    <button class="link" id="dClose">Fermer</button>
+  </div>
+</div>
+
+<div id="tdrawer" class="ovl" hidden>
+  <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="tTitle">
+    <h3 id="tTitle"></h3>
+    <div class="ds" id="tSub"></div>
+    <div class="durs" id="durs"></div>
+    <button class="link" id="tClose">Fermer</button>
+  </div>
+</div>
+
+<script>
+/* ---------- utilitaires ---------- */
+const $=s=>document.querySelector(s);
+const rnd=n=>Math.floor(Math.random()*n);
+const pick=a=>a[rnd(a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const fmt=n=>typeof n==='number'?n.toLocaleString('fr-FR'):String(n);
+const range=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
+const B='<span class="blank">?</span>';
+const L=n=>String.fromCharCode(64+n);
+function numChoices(ans,extra){
+  const set=new Set([ans]);
+  for(const x of shuffle(extra.filter(v=>Number.isInteger(v)&&v>0&&v!==ans))){if(set.size>=4)break;set.add(x)}
+  let d=1;while(set.size<4){const c=ans+(Math.random()<.5?-d:d);if(c>0)set.add(c);d++}
+  return shuffle([...set]).map(fmt);
+}
+function labelChoices(ans,pool){const o=shuffle(pool.filter(x=>x!==ans)).slice(0,3);return shuffle([ans,...o])}
+const isPrime=n=>{if(n<2)return false;for(let i=2;i*i<=n;i++)if(n%i===0)return false;return true};
+const smallestF=n=>{for(let i=2;i*i<=n;i++)if(n%i===0)return i;return n};
+const PRIMES=range(2,100).filter(isPrime);
+const F=[1,1,2,6,24,120,720,5040,40320];
+const sumSq=n=>n*(n+1)*(2*n+1)/6;
+const ways=s=>6-Math.abs(s-7);
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const TRIPLES=[[3,4,5],[6,8,10],[5,12,13],[9,12,15],[8,15,17],[12,16,20],[7,24,25],[15,20,25],[10,24,26],[20,21,29]];
+const RULES={2:'Dernier chiffre pair',3:'Somme des chiffres divisible par 3',4:'Deux derniers chiffres divisibles par 4',5:'Se termine par 0 ou 5',6:'Divisible par 2 et par 3',7:'Le reste − 2 × dernier chiffre est multiple de 7',8:'Trois derniers chiffres divisibles par 8',9:'Somme des chiffres divisible par 9',10:'Se termine par 0',11:'Somme alternée des chiffres divisible par 11'};
+const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MDAYS=['31','28 ou 29','31','30','31','30','31','31','30','31','30','31'];
+const YEARS=[1600,1700,1800,1900,1996,2000,2023,2024,2026,2028,2100,2200,2400,2032];
+const isLeap=y=>(y%4===0&&y%100!==0)||y%400===0;
+const DSUM=['2 ou 12','3 ou 11','4 ou 10','5 ou 9','6 ou 8','7 seulement'];
+
+function divExplain(N,k){
+  const d=[...String(N)].map(Number),sum=d.reduce((a,b)=>a+b,0),last=d[d.length-1];
+  switch(k){
+    case 2:return `Dernier chiffre ${last} : ${last%2?'impair':'pair'}`;
+    case 5:case 10:return `Se termine par ${last}`;
+    case 3:case 9:return `Somme des chiffres = ${sum} ${sum%k?`, pas un multiple de ${k}`:`= ${k} × ${sum/k}`}`;
+    case 4:{const x=N%100;return `${String(x).padStart(2,'0')} ${x%4?'n’est pas':'est'} multiple de 4`}
+    case 8:{const x=N%1000;return `${String(x).padStart(3,'0')} ${x%8?'n’est pas':'est'} multiple de 8`}
+    case 6:return `Pair : ${N%2?'non':'oui'} · somme ${sum} ÷ 3 : ${sum%3?'non':'oui'}`;
+    case 7:{let m=N;const st=[];while(m>=100){const r=Math.floor(m/10),u=m%10,nm=r-2*u;st.push(`${r} − ${2*u} = ${nm}`);m=Math.abs(nm)}return `${st.join(' → ')}${st.length?' · ':''}${m} ${m%7?'n’est pas':'est'} multiple de 7`}
+    case 11:{const rv=[...d].reverse();const alt=rv.reduce((a,v,i)=>a+(i%2?-v:v),0);const ex=rv.map((v,i)=>(i?(i%2?' − ':' + '):'')+v).join('');return `${ex} = ${alt} ${alt%11?', pas multiple de 11':', multiple de 11'}`}
+  }
+}
+const RULE_EX={2:'348 finit par 8, pair : divisible',3:'471 : 4 + 7 + 1 = 12 : divisible',4:'1 316 : 16 = 4 × 4 : divisible',5:'735 finit par 5 : divisible',6:'522 : pair, et 5 + 2 + 2 = 9 : divisible',7:'392 : 39 − 2×2 = 35 = 7 × 5 : divisible',8:'5 120 : 120 = 8 × 15 : divisible',9:'5 841 : 5 + 8 + 4 + 1 = 18 : divisible',10:'470 finit par 0 : divisible',11:'1 452 : 2 − 5 + 4 − 1 = 0 : divisible'};
+function multEx(a,b){const p=a*b;const big=Math.max(a,b),sm=Math.min(a,b);
+  if(big<=10)return `${a} × ${b} = ${fmt(p)}`;
+  if(big===20)return `${sm} × 20 = ${sm} × 2 × 10 = ${fmt(p)}`;
+  const u=big-10;return `${sm} × ${big} = ${sm} × 10 + ${sm} × ${u} = ${10*sm} + ${sm*u} = ${fmt(p)}`}
+function sqEx(n){const s=n*n;if(n<=10)return `${n} × ${n} = ${s}`;if(n===20)return `20² = 2² × 100 = 400`;const u=n-10;return `(10 + ${u})² = 100 + 2×10×${u} + ${u}² = 100 + ${20*u} + ${u*u} = ${s}`}
+function primeEx(n){if(n<4)return `${n} n’a que deux diviseurs : 1 et ${n}`;const ps=PRIMES.filter(p=>p*p<=n);return `${n} n’est divisible ${ps.length>1?'ni par '+ps.join(', ni par '):'pas par '+ps[0]} : il est premier (on teste jusqu’à √${n})`}
+function dComb(w){const sums=w===6?[7]:[w+1,13-w];return sums.map(s=>`somme ${s} : `+range(1,6).filter(a=>s-a>=1&&s-a<=6).map(a=>`(${a},${s-a})`).join(' ')).join(' · ')+(w===6?'':` : ${w} cas chacune`)}
+function gridVis(n,k){let h=`<div class="grid" style="--n:${n}">`;for(let r=0;r<n;r++)for(let c=0;c<n;c++)h+=`<i class="${k&&r<k&&c<k?'hi':''}"></i>`;return h+'</div>'}
+
+/* ---------- thèmes ---------- */
+const THEMES=[
+{id:'premiers',name:'Nombres premiers',sub:'jusqu’à 100',glyph:'p',
+ items:range(2,100).filter(n=>n<=5||(n%2&&n%5)).map(n=>({k:n,n})),
+ make({n}){const p=isPrime(n),f=smallestF(n);return{sub:'Premier ou pas ?',prompt:String(n),choices:['Premier','Pas premier'],answer:p?'Premier':'Pas premier',explain:p?primeEx(n):`${n} = ${f} × ${n/f}, donc divisible par ${f}`}}},
+{id:'tables',name:'Tables',sub:'de 2 à 20',glyph:'×',
+ items:(()=>{const a=[];for(let x=2;x<=20;x++)for(let y=x;y<=20;y++)a.push({k:x+'x'+y,a:x,b:y});return a})(),
+ make({a,b}){if(Math.random()<.5)[a,b]=[b,a];const p=a*b;
+  if(Math.random()<.25)return{sub:'Table de '+b,prompt:`${B} × ${b} = ${fmt(p)}`,choices:numChoices(a,[a+1,a-1,a+2,a-2]),answer:fmt(a),explain:`${fmt(p)} ÷ ${b} = ${a} · ${multEx(a,b)}`};
+  return{sub:'Table de '+b,prompt:`${a} × ${b}`,choices:numChoices(p,[p+a,p-a,p+b,p-b,p+10,p-10,(a+1)*(b-1)]),answer:fmt(p),explain:multEx(a,b)}}},
+{id:'carres',name:'Carrés',sub:'de 1² à 20²',glyph:'n²',
+ items:range(1,20).map(n=>({k:n,n})),
+ make({n}){const s=n*n;if(n>3&&Math.random()<.3)return{sub:'Racine carrée',prompt:`√${fmt(s)}`,choices:numChoices(n,[n+1,n-1,n+2,n-2]),answer:fmt(n),explain:`√${fmt(s)} = ${n} car ${sqEx(n)}`};
+  return{sub:'Carré',prompt:`${n}²`,choices:numChoices(s,[(n-1)**2,(n+1)**2,s+10,s-10,s+n,2*n]),answer:fmt(s),explain:sqEx(n)}}},
+{id:'cubes',name:'Cubes',sub:'de 1³ à 20³',glyph:'n³',
+ items:range(1,20).map(n=>({k:n,n})),
+ make({n}){const c=n**3;if(n>2&&Math.random()<.3)return{sub:'Racine cubique',prompt:`∛${fmt(c)}`,choices:numChoices(n,[n+1,n-1,n+2,n-2]),answer:fmt(n),explain:`∛${fmt(c)} = ${n} car ${n}² × ${n} = ${n*n} × ${n} = ${fmt(c)}`};
+  return{sub:'Cube',prompt:`${n}³`,choices:numChoices(c,[(n-1)**3,(n+1)**3,c+n*n,c-n*n,c+100,3*n]),answer:fmt(c),explain:`${n}³ = ${n}² × ${n} = ${n*n} × ${n} = ${fmt(c)}`}}},
+{id:'alphabet',name:'Alphabet',sub:'A = 1 … Z = 26',glyph:'A1',
+ items:range(1,26).map(n=>({k:n,n})),
+ make({n}){const a=Math.min(25,Math.max(5,Math.round(n/5)*5));const gap=n-a;const tip=`${L(n)} = ${n} : repère ${L(a)} = ${a}${gap?`, puis ${gap>0?'+':'−'}${Math.abs(gap)}`:''}`;
+  if(Math.random()<.5)return{sub:'Rang dans l’alphabet',prompt:L(n),choices:numChoices(n,[n+1,n-1,n+2,n-2].filter(x=>x<=26)),answer:fmt(n),explain:tip};
+  const o=new Set([n]);for(const d of shuffle([1,-1,2,-2,3,-3])){const m=n+d;if(m>=1&&m<=26)o.add(m);if(o.size===4)break}
+  return{sub:'Quelle lettre ?',prompt:String(n),choices:shuffle([...o]).map(L),answer:L(n),explain:tip}}},
+{id:'imbriques',name:'Carrés imbriqués',sub:'grilles 2×2 à 5×5',glyph:'□',
+ items:range(2,5).map(n=>({k:'t'+n,n})),
+ make({n}){const S=sumSq(n);return{sub:'Nombre total de carrés',prompt:`${n}×${n}`,visual:gridVis(n),choices:numChoices(S,[n*n,sumSq(n-1),sumSq(n+1),n*n+n,2*n*n]),answer:fmt(S),explain:`${range(1,n).map(i=>i+'²').join(' + ')} = ${range(1,n).map(i=>i*i).join(' + ')} = ${S}`}}},
+{id:'pytha',name:'Triplets pythagoriciens',sub:'jusqu’à 20-21-29',glyph:'a²+b²',
+ items:TRIPLES.map(t=>({k:t.join('-'),t})),
+ make({t}){const h=Math.random()<.6?2:rnd(2);const v=t[h];const parts=t.map((x,i)=>i===h?B:x);const[a,b,c]=t;
+  return{sub:'Complète le triplet',prompt:parts.join(' · '),choices:numChoices(v,[v+1,v-1,v+2,v-2,v+3]),answer:fmt(v),explain:`${a}² + ${b}² = ${a*a} + ${b*b} = ${c*c} = ${c}²`}}},
+{id:'divis',name:'Divisibilité',sub:'critères de 2 à 11',glyph:'÷',
+ items:range(2,11).flatMap(k=>[{k:'r'+k,d:k,r:1},{k:'t'+k,d:k}]),
+ make({d,r}){if(r){const pool=Object.values(RULES);return{sub:'Quel critère ?',prompt:`÷ ${d}`,choices:labelChoices(RULES[d],pool),answer:RULES[d],explain:'Exemple : '+RULE_EX[d],long:true}}
+  let N=1000+rnd(9000);if(Math.random()<.5){N-=N%d;if(N<1000)N+=d}else if(N%d===0)N+=1;
+  const ok=N%d===0;return{sub:`Divisible par ${d} ?`,prompt:fmt(N),choices:['Oui','Non'],answer:ok?'Oui':'Non',explain:`Critère : ${RULES[d].toLowerCase()}. ${divExplain(N,d)}`}}},
+{id:'vitesse',name:'m/s ↔ km/h',sub:'× 3,6 et ÷ 3,6',glyph:'3,6',
+ items:[...[5,10,15,20,25,30,40,50,100].map(v=>({k:'m'+v,v,u:'m'})),...[18,36,54,72,90,108,144,180].map(v=>({k:'k'+v,v,u:'k'})),{k:'r1',u:'r1'},{k:'r2',u:'r2'}],
+ make({v,u}){const ops=['× 3,6','÷ 3,6','× 60','÷ 1 000'];
+  if(u==='r1')return{sub:'Pour passer de…',prompt:'m/s → km/h',choices:shuffle([...ops]),answer:'× 3,6',explain:'1 m/s = 3 600 m par heure = 3,6 km/h, donc on multiplie par 3,6'};
+  if(u==='r2')return{sub:'Pour passer de…',prompt:'km/h → m/s',choices:shuffle([...ops]),answer:'÷ 3,6',explain:'1 km/h = 1 000 m en 3 600 s, donc on divise par 3,6 (36 km/h = 10 m/s)'};
+  if(u==='m'){const a=v*18/5;return{sub:'Convertir en km/h',prompt:`${v} m/s`,choices:numChoices(a,[a+18,a-18,v*3,v*6,a+36]),answer:fmt(a),explain:`${v} × 3,6 = ${v} × 36 ÷ 10 = ${fmt(a)} km/h`}}
+  const a=v*5/18;return{sub:'Convertir en m/s',prompt:`${v} km/h`,choices:numChoices(a,[a+5,a-5,a+10,Math.round(v/3),a*2]),answer:fmt(a),explain:`${v} ÷ 3,6 = ${v} ÷ 18 × 5 = ${v/18} × 5 = ${a} m/s`}}},
+{id:'des',name:'Deux dés',sub:'probas des sommes',glyph:'Σ',
+ items:[...range(2,12).map(s=>({k:'p'+s,s})),...range(1,6).map(w=>({k:'w'+w,w}))],
+ make({s,w}){if(w)return{sub:'Quelle somme ?',prompt:`${w}/36`,choices:labelChoices(DSUM[w-1],DSUM),answer:DSUM[w-1],explain:dComb(w)};
+  const k=ways(s),o=new Set([k]);for(const d of shuffle([1,-1,2,-2,3])){const m=k+d;if(m>=1&&m<=6)o.add(m);if(o.size===4)break}
+  const combos=range(1,6).filter(a=>s-a>=1&&s-a<=6).map(a=>`(${a},${s-a})`).join(' ');const g=gcd(k,36);
+  return{sub:'Proba avec 2 dés',prompt:`somme = ${s}`,choices:shuffle([...o]).map(x=>x+'/36'),answer:k+'/36',explain:`${k} cas sur 36 : ${combos}${g>1?` · soit ${k/g}/${36/g}`:''}`}}},
+{id:'facto',name:'Factorielles',sub:'de 0! à 8!',glyph:'n!',
+ items:range(0,8).map(n=>({k:n,n})),
+ make({n}){const ex=n<2?`${n}! = 1 (convention)`:`${range(1,n).reverse().join(' × ')} = ${fmt(F[n])}`;
+  if(n>=3&&Math.random()<.35){const o=new Set([n]);for(const d of shuffle([1,-1,2,-2])){const m=n+d;if(m>=2&&m<=9)o.add(m)}return{sub:'C’est la factorielle de…',prompt:fmt(F[n]),choices:shuffle([n,...shuffle([...o].filter(x=>x!==n)).slice(0,3)]).map(x=>x+'!'),answer:n+'!',explain:ex}}
+  return{sub:'Factorielle',prompt:`${n}!`,choices:numChoices(F[n],[F[n-1],F[n+1],F[n]*2,F[n]/2,F[n]+n]),answer:fmt(F[n]),explain:ex}}},
+{id:'calendrier',name:'Calendrier',sub:'mois et bissextiles',glyph:'31',
+ items:[...range(0,11).map(i=>({k:'m'+i,m:i})),...YEARS.map(y=>({k:'y'+y,y})),{k:'n366',z:1}],
+ make({m,y,z}){if(z)return{sub:'Jours dans une année bissextile',prompt:'366 ?',choices:['365','366','364','367'],answer:'366',explain:'366 jours, avec le 29 février'};
+  if(y){const l=isLeap(y);const why=y%4?'pas divisible par 4':y%100?'divisible par 4, pas par 100':y%400?'divisible par 100 mais pas par 400':'divisible par 400';return{sub:'Année bissextile ?',prompt:String(y),choices:['Bissextile','Pas bissextile'],answer:l?'Bissextile':'Pas bissextile',explain:`${y} : ${why}`}}
+  const a=MDAYS[m];return{sub:'Combien de jours ?',prompt:MONTHS[m],choices:['28 ou 29','30','31'],answer:a,explain:m===1?'28 jours, 29 les années bissextiles':a==='31'?'Bosse du poing : 31 jours':'Creux du poing : 30 jours'}}}
+];
+const TH=Object.fromEntries(THEMES.map(t=>[t.id,t]));
+
+/* ---------- stockage ---------- */
+const STORE='carnet-tage-v1';
+let S={stats:{},xp:0,best:{},streak:0,last:'',today:0,todayDate:''};
+try{const raw=localStorage.getItem(STORE);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}}
+const dayKey=d=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+function touchDay(){const t=dayKey(new Date());if(S.todayDate!==t){S.today=0;S.todayDate=t}}
+function bumpStreak(){const t=dayKey(new Date());if(S.last===t)return;const y=new Date();y.setDate(y.getDate()-1);S.streak=S.last===dayKey(y)?S.streak+1:1;S.last=t}
+const GOAL=60;
+const keyOf=(t,it)=>t.id+':'+it.k;
+function weight(k){const st=S.stats[k];if(!st)return 1.6;if(st.s>=3)return .25;return Math.max(.3,1+st.w*.6-st.s*.3)}
+function mastery(t){let m=0;for(const it of t.items){const st=S.stats[keyOf(t,it)];if(st)m+=Math.min(st.s,3)/3}return Math.round(100*m/t.items.length)}
+function weakList(){const out=[];for(const t of THEMES)for(const it of t.items){const st=S.stats[keyOf(t,it)];if(st&&st.w>0&&st.s<2)out.push({t,it})}return out}
+
+/* ---------- accueil ---------- */
+function renderHome(){
+  touchDay();
+  const lvl=Math.floor(S.xp/250)+1;$('#sLvl').textContent=lvl;$('#sLvlBar').style.width=(S.xp%250)/2.5+'%';
+  const y=new Date();y.setDate(y.getDate()-1);const alive=S.last===dayKey(new Date())||S.last===dayKey(y);
+  $('#sStreak').textContent=(alive?S.streak:0)+' j';$('#sStreakBar').style.width=Math.min(100,(alive?S.streak:0)/7*100)+'%';
+  $('#sToday').textContent=`${S.today}/${GOAL}`;$('#sTodayBar').style.width=Math.min(100,S.today/GOAL*100)+'%';
+  $('#bestMix').textContent=S.best['sprint:mix']||0;
+  const w=weakList().length;$('#weakN').textContent=w?`${w} à revoir`:'rien à revoir';$('#goWeak').disabled=!w;
+  renderDefis();renderLearnList();
+  $('#themes').innerHTML=THEMES.map(t=>{const m=mastery(t);return`<button class="tcard" data-t="${t.id}"><span class="glyph">${t.glyph}</span><span class="tn">${t.name}</span><span class="ts">${t.sub}</span><span class="bar"><i style="width:${m}%"></i></span><span class="pct"><span>Maîtrise</span><span class="num">${m} %</span></span></button>`}).join('');
+}
+function show(id){for(const s of['home','play','end','sheet','learn'])$('#'+s).hidden=s!==id;window.scrollTo(0,0)}
+
+/* ---------- session ---------- */
+let G=null;
+const norm=s=>String(s).replace(/[^0-9A-Za-z]/g,'').toUpperCase();
+const fmtDur=ms=>{const s=Math.ceil(ms/1000);return s>=60?`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`:String(s)};
+function start(opts){
+  // opts: {mode:'quiz'|'sprint', themes:[ids], total, queue, label, bestKey, dur, typed}
+  clearTimeout(G&&G.tid);clearInterval(G&&G.iv);
+  G={dur:60000,...opts,idx:0,answered:0,score:0,combo:0,bestCombo:0,xp:0,mist:[],recent:[],locked:false};
+  show('play');$('#hudLabel').textContent=opts.label;$('#hudTimer').hidden=opts.mode!=='sprint';
+  if(opts.mode==='sprint'){G.end=Date.now()+G.dur;G.iv=setInterval(tick,100);tick()}
+  nextQ();
+}
+function tick(){const left=Math.max(0,G.end-Date.now());$('#hudTimer').textContent=fmtDur(left);$('#hudBar').style.width=(left/G.dur*100)+'%';if(left<=0){clearInterval(G.iv);clearTimeout(G.tid);finish()}}
+function pickItem(t){let tot=0;const ws=t.items.map(it=>{const k=keyOf(t,it);const w=G.recent.includes(k)?.02:weight(k);tot+=w;return w});let r=Math.random()*tot;for(let i=0;i<t.items.length;i++){r-=ws[i];if(r<=0)return t.items[i]}return t.items[t.items.length-1]}
+let padKind='';
+function buildPad(kind){
+  if(padKind===kind)return;padKind=kind;const p=$('#pad');p.className='pad '+kind;
+  if(kind==='letter')p.innerHTML=range(1,26).map(n=>`<button class="pk" data-k="${L(n)}">${L(n)}</button>`).join('');
+  else p.innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button class="pk" data-k="${d}">${d}</button>`).join('')+'<button class="pk fn" data-k="del" aria-label="Effacer">⌫</button><button class="pk" data-k="0">0</button><button class="pk ok" data-k="ok">OK</button>';
+}
+function nextQ(){
+  if(G.mode==='quiz'&&G.idx>=G.total)return finish();
+  let t,it;
+  if(G.queue){({t,it}=G.queue[G.idx])}else{t=TH[pick(G.themes)];it=pickItem(t)}
+  const q=t.make(it);q.t=t;q.it=it;q.key=keyOf(t,it);G.q=q;G.locked=false;
+  G.recent.push(q.key);if(G.recent.length>6)G.recent.shift();
+  if(G.mode==='quiz')$('#hudBar').style.width=(G.idx/G.total*100)+'%';
+  $('#qSub').textContent=(G.themes&&new Set(G.themes).size>1||G.queue?t.name+' · ':'')+q.sub;
+  const pr=$('#qPrompt');pr.innerHTML=q.prompt;const len=pr.textContent.length;pr.className='prompt'+(len>11?' s':len>6?' m':'');
+  $('#qVis').innerHTML=q.visual||'';
+  const fx=$('#qFix');fx.textContent='';fx.className='fix';
+  const typedOk=G.typed&&/^[0-9   ]+$|^[A-Z]$/.test(q.answer);
+  G.typing=typedOk?(/^[A-Z]$/.test(q.answer)?'letter':'num'):'';
+  $('#choices').hidden=!!G.typing;$('#typedBox').hidden=!G.typing;$('#pad').hidden=!G.typing;
+  if(G.typing){G.entry='';buildPad(G.typing);renderEntry();$('#typedBox').className='typed';$('#typedHint').textContent=G.typing==='letter'?'Touche la lettre':'Tape le nombre, validé dès qu’il est juste'}
+  else{const ch=$('#choices');ch.className='choices'+(q.long||q.choices.some(c=>c.length>9)?' long':'');
+    ch.innerHTML=q.choices.map((c,i)=>`<button class="ch" data-v="${c.replace(/"/g,'&quot;')}"><span class="k">${i+1}</span>${c}</button>`).join('')}
+  $('#nextbar').hidden=true;
+}
+function renderEntry(){$('#typedVal').textContent=G.entry?(G.typing==='num'?Number(G.entry).toLocaleString('fr-FR'):G.entry):''}
+function padKey(k){
+  if(!G||G.locked||!G.typing)return;
+  if(G.typing==='letter'){if(/^[A-Z]$/.test(k)){G.entry=k;renderEntry();typedSubmit()}return}
+  if(k==='del'){G.entry=G.entry.slice(0,-1);renderEntry();return}
+  if(k==='ok'){typedSubmit();return}
+  if(/^[0-9]$/.test(k)&&G.entry.length<7){G.entry+=k;renderEntry();if(norm(G.entry)===norm(G.q.answer))typedSubmit()}
+}
+function typedSubmit(){
+  if(!G||G.locked)return;G.locked=true;const ok=norm(G.entry)===norm(G.q.answer);
+  $('#typedBox').className='typed '+(ok?'right':'wrong');if(!G.entry)$('#typedVal').textContent='—';
+  resolve(ok);
+}
+function answer(btn){
+  if(!G||G.locked)return;G.locked=true;const q=G.q;const ok=btn.dataset.v===q.answer;
+  for(const b of document.querySelectorAll('.ch')){if(b.dataset.v===q.answer)b.classList.add('right');else if(b===btn)b.classList.add('wrong');else b.classList.add('dim')}
+  resolve(ok);
+}
+function resolve(ok){
+  const q=G.q;touchDay();bumpStreak();S.today++;
+  const st=S.stats[q.key]||{s:0,w:0,c:0};if(ok){st.s++;st.c++}else{st.s=0;st.w++}S.stats[q.key]=st;
+  G.answered++;
+  const fx=$('#qFix');const card=$('#qcard');card.classList.remove('shake','pop');void card.offsetWidth;
+  if(ok){G.score++;G.combo++;G.bestCombo=Math.max(G.bestCombo,G.combo);const gain=10+2*Math.min(G.combo,10);G.xp+=gain;S.xp+=gain;fx.textContent=q.explain||'Bien vu';fx.className='fix ok';card.classList.add('pop')}
+  else{G.combo=0;G.mist.push(q);fx.innerHTML=`<span class="fixa">Bonne réponse : ${q.answer}</span>${q.explain||''}`;card.classList.add('shake')}
+  const c=$('#hudCombo');c.textContent='×'+G.combo;c.classList.toggle('hot',G.combo>=5);
+  save();G.idx++;
+  if(G.mode==='sprint'){G.tid=setTimeout(nextQ,ok?(G.typing?250:380):2600)}
+  else if(ok){G.tid=setTimeout(nextQ,G.typing?600:850)}
+  else{$('#nextbar').hidden=false;$('#nextBtn').focus({preventScroll:true})}
+}
+function finish(){
+  clearInterval(G.iv);clearTimeout(G.tid);
+  const acc=G.answered?Math.round(100*G.score/G.answered):0;let rec=false;
+  if(G.mode==='sprint'&&G.bestKey){if(G.score>(S.best[G.bestKey]||0)){S.best[G.bestKey]=G.score;rec=G.score>0}}
+  save();show('end');
+  $('#endHead').textContent=G.mode==='sprint'?`${G.score} en ${G.dur>=60000&&G.dur!==60000?G.dur/60000+' min':'60 s'}`:`${G.score}/${G.answered}`;
+  $('#endHand').textContent=rec?'Nouveau record !':acc>=90?'Excellent, c’est ancré.':acc>=70?'Solide, encore un tour.':acc>=40?'Ça rentre, on insiste.':'On reprend la fiche et on y retourne.';
+  $('#eScore').textContent=G.score;$('#eAcc').textContent=acc+' %';$('#eXp').textContent='+'+G.xp;
+  const seen=new Set();const ms=G.mist.filter(q=>!seen.has(q.key)&&seen.add(q.key));
+  $('#mistLabel').textContent=ms.length?`À retenir (${ms.length})`:'Aucune erreur';
+  $('#mist').innerHTML=ms.map(q=>`<div class="mi"><span class="a">${q.prompt.replace(B,'?')}</span><span class="b">${q.answer}</span><span class="e">${q.explain||''}</span></div>`).join('');
+  $('#eReview').disabled=!ms.length;G.lastMist=ms.map(q=>({t:q.t,it:q.it}));G.lastTyped=!!G.typed;
+}
+
+/* ---------- lancements ---------- */
+const allIds=THEMES.map(t=>t.id);
+function startQuiz(ids,label,typed){start({mode:'quiz',themes:ids,total:ids.length>1?20:15,label,typed})}
+function startSprint(ids,label){start({mode:'sprint',themes:ids,label,bestKey:'sprint:'+(ids.length>1?'mix':ids[0])})}
+function startQueue(list,label,typed){const q=shuffle(list.slice()).slice(0,20);start({mode:'quiz',queue:q,total:q.length,label,typed})}
+const DEFIS={
+  calcul:{name:'Calcul mental',sub:'Tables, carrés et cubes jusqu’à 20, réponse à taper',glyph:'×²³',themes:['tables','tables','carres','cubes'],typed:true},
+  lettres:{name:'Rang des lettres',sub:'Lettre → numéro et numéro → lettre, à taper',glyph:'A·1',themes:['alphabet'],typed:true},
+  premiers:{name:'Premier ou pas',sub:'Un maximum de nombres jusqu’à 100',glyph:'p?',themes:['premiers'],typed:false}
+};
+function startDefi(id,min){const d=DEFIS[id];start({mode:'sprint',themes:d.themes,typed:d.typed,dur:min*60000,label:`${d.name} · ${min} min`,bestKey:`defi:${id}:${min}`})}
+let lastLaunch=null;
+function launch(fn,...a){lastLaunch=()=>fn(...a);fn(...a)}
+
+$('#goMix').onclick=()=>launch(startQuiz,allIds,'Révision mixte');
+$('#goSprint').onclick=()=>launch(startSprint,allIds,'Sprint mixte');
+$('#goWeak').onclick=()=>{const w=weakList();if(w.length)launch(startQueue,w,'Points faibles')};
+$('#themes').onclick=e=>{const b=e.target.closest('.tcard');if(b)openDrawer(b.dataset.t)};
+$('#choices').onclick=e=>{const b=e.target.closest('.ch');if(b)answer(b)};
+$('#nextBtn').onclick=()=>nextQ();
+$('#quit').onclick=()=>{clearInterval(G.iv);clearTimeout(G.tid);if(G.answered)finish();else{G=null;renderHome();show('home')}};
+$('#eAgain').onclick=()=>lastLaunch&&lastLaunch();
+$('#eReview').onclick=()=>{if(G&&G.lastMist&&G.lastMist.length){const m=G.lastMist,ty=G.lastTyped;launch(startQueue,m,'Mes erreurs',ty)}};
+$('#pad').onclick=e=>{const b=e.target.closest('.pk');if(b)padKey(b.dataset.k)};
+const TYPEDOK=['alphabet','tables','carres','cubes'];
+$('#dTyped').onclick=()=>{closeDrawer();launch(startQuiz,[curT.id],curT.name+' · à écrire',true)};
+let curD=null;
+function renderDefis(){$('#defis').innerHTML=Object.entries(DEFIS).map(([id,d])=>`<button class="dcard" data-d="${id}"><span class="glyph">${d.glyph}</span><span class="tn">${d.name}</span><span class="ts">Record 1 min : <span class="num">${S.best['defi:'+id+':1']||0}</span></span></button>`).join('')}
+$('#defis').onclick=e=>{const b=e.target.closest('.dcard');if(!b)return;curD=b.dataset.d;const d=DEFIS[curD];$('#tTitle').textContent=d.name;$('#tSub').textContent=d.sub;
+  $('#durs').innerHTML=[1,3,5].map(m=>`<button class="btn${m===3?' alt':''}" data-m="${m}"><b>${m}</b>min<small>Record : ${S.best[`defi:${curD}:${m}`]||0}</small></button>`).join('');$('#tdrawer').hidden=false};
+$('#durs').onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;$('#tdrawer').hidden=true;launch(startDefi,curD,+b.dataset.m)};
+$('#tClose').onclick=()=>{$('#tdrawer').hidden=true};
+$('#tdrawer').onclick=e=>{if(e.target.id==='tdrawer')$('#tdrawer').hidden=true};
+$('#eHome').onclick=()=>{renderHome();show('home')};
+
+/* tiroir */
+let curT=null;
+function openDrawer(id){curT=TH[id];$('#dTitle').textContent=curT.name;$('#dSub').textContent=`${curT.sub} · ${curT.items.length} éléments · maîtrise ${mastery(curT)} %`;$('#dBar').style.width=mastery(curT)+'%';$('#dBest').textContent=S.best['sprint:'+id]||0;$('#dTyped').hidden=!TYPEDOK.includes(id);$('#drawer').hidden=false;$('#dQuiz').focus({preventScroll:true})}
+function closeDrawer(){$('#drawer').hidden=true}
+$('#drawer').onclick=e=>{if(e.target.id==='drawer')closeDrawer()};
+$('#dClose').onclick=closeDrawer;
+$('#dQuiz').onclick=()=>{closeDrawer();launch(startQuiz,[curT.id],curT.name)};
+$('#dSprint').onclick=()=>{closeDrawer();launch(startSprint,[curT.id],curT.name+' · sprint')};
+$('#dSheet').onclick=()=>{closeDrawer();openSheet(curT.id)};
+$('#sheetBack').onclick=()=>{renderHome();show('home')};
+$('#sheetQuiz').onclick=()=>launch(startQuiz,[curT.id],curT.name);
+$('#sheetSprint').onclick=()=>launch(startSprint,[curT.id],curT.name+' · sprint');
+
+/* remise à zéro avec confirmation intégrée */
+function resetUI(){$('#resetZone').innerHTML='<button class="link" id="resetBtn">Remettre la progression à zéro</button>';$('#resetBtn').onclick=askReset}
+function askReset(){$('#resetZone').innerHTML='<div class="confirm"><span>Tout effacer ?</span><button class="btn alt" id="rYes" style="padding:8px 14px">Effacer</button><button class="btn ghost" id="rNo" style="padding:8px 14px">Annuler</button></div>';
+  $('#rYes').onclick=()=>{S={stats:{},xp:0,best:{},streak:0,last:'',today:0,todayDate:''};save();resetUI();renderHome()};$('#rNo').onclick=resetUI}
+$('#resetBtn').onclick=askReset;
+
+/* clavier : 1-4 pour répondre, Entrée pour continuer */
+document.addEventListener('keydown',e=>{
+  if(!$('#drawer').hidden&&e.key==='Escape')return closeDrawer();
+  if($('#play').hidden||!G)return;
+  if(G.typing&&!G.locked){if(e.key==='Backspace'){e.preventDefault();return padKey('del')}if(e.key==='Enter'){e.preventDefault();return padKey('ok')}const k=e.key.toUpperCase();if(/^[0-9A-Z]$/.test(k))padKey(k);return}
+  if(/^[1-4]$/.test(e.key)&&!G.typing){const b=document.querySelectorAll('.ch')[+e.key-1];if(b)answer(b)}
+  else if((e.key==='Enter'||e.key===' ')&&!$('#nextbar').hidden){e.preventDefault();nextQ()}
+});
+
+/* ---------- fiches ---------- */
+function openSheet(id){
+  if(id==='all'){curT=null;$('#sheetTitle').textContent='Toutes les fiches';
+    $('#sheetBody').innerHTML=`<div class="lchips" style="margin-top:12px">${THEMES.map(t=>`<a class="lchip" href="#f-${t.id}"><span class="glyph">${t.glyph}</span>${t.name}</a>`).join('')}</div>`+THEMES.map(t=>`<h3 class="shh" id="f-${t.id}">${t.name}</h3>${sheetHTML(t.id)}`).join('');
+    $('#sheetCta').hidden=true;show('sheet');return}
+  curT=TH[id];$('#sheetTitle').textContent=curT.name;$('#sheetBody').innerHTML=sheetHTML(id);$('#sheetCta').hidden=false;show('sheet')}
+function sheetHTML(id){
+  const P=(h,t)=>`<div class="paper">${t?`<div class="ptitle">${t}</div>`:''}${h}</div>`;
+  const N=(t)=>`<p class="note">${t}</p>`;
+  switch(id){
+  case 'premiers':{let g='<div class="p100">';for(let n=1;n<=100;n++)g+=`<span class="${isPrime(n)?'pr':''}">${n}</span>`;g+='</div>';
+    return P(g+'<p class="cap">En rouge : les 25 nombres premiers jusqu’à 100.</p>','Les nombres premiers de 1 à 100')+
+    P(`<div class="chips">${PRIMES.map(p=>`<span class="chip r">${p}</span>`).join('')}</div>`,'Les 25 à réciter')+
+    P(`<div class="kv">${[21,27,33,39,49,51,57,63,69,77,81,87,91,93].map(n=>{const f=smallestF(n);return`<span><b>${n}</b> = ${f} × ${n/f}</span>`}).join('')}</div>`+N('51, 57, 87 et 91 sont les plus piégeux'),'Les faux premiers')+
+    P('<p>1 n’est pas premier. 2 est le seul premier pair. Pour tester n, essaie les premiers jusqu’à √n : jusqu’à 100, il suffit de 2, 3, 5 et 7.</p>','À savoir')}
+  case 'tables':{const blocks=range(2,20).map(b=>`<div class="tb"><div class="tbh">× ${b}</div><div class="tbg">${range(1,20).map(a=>`<span${a===b?' class="sq"':''}><i>${a}</i>${a*b}</span>`).join('')}</div></div>`).join('');
+    let h='<div class="scroll"><table class="mult"><tr><th>×</th>'+range(1,20).map(i=>`<th>${i}</th>`).join('')+'</tr>';for(let r=1;r<=20;r++){h+=`<tr><th>${r}</th>`+range(1,20).map(c=>`<td class="${r===c?'d':''}">${r*c}</td>`).join('')+'</tr>'}h+='</table></div>';
+    return P(`<div class="tblocks">${blocks}</div><p class="cap">Petit chiffre : le multiplicateur. Encadré : le carré.</p>`,'Les tables de 2 à 20')+
+    P(`<p><b>Table de 11 à 19</b> : n × 1u = n × 10 + n × u. Ex. 14 × 17 = 140 + 98 = 238.</p><p><b>× 15</b> = × 10 puis ajouter la moitié. <b>× 20</b> = × 2 puis × 10. <b>× 19</b> = × 20 − n.</p>`,'Astuces')+
+    `<details class="paper"><summary class="ptitle">Tableau complet 20 × 20</summary>${h}</details>`}
+  case 'carres':return P(`<div class="kv c4">${range(1,20).map(n=>`<span><b>${n}²</b> = ${fmt(n*n)}</span>`).join('')}</div>`,'Les carrés de 1 à 20')+
+    P(`<p><b>De 11 à 19</b> : (10 + u)² = 100 + 20u + u². Ex. 17² = 100 + 140 + 49 = 289.</p><p><b>Finissant par 5</b> : 15² = 1×2 puis 25 → 225.</p><p>Un carré finit toujours par 0, 1, 4, 5, 6 ou 9.</p>`,'Astuces');
+  case 'cubes':return P(`<div class="kv c3">${range(1,20).map(n=>`<span><b>${n}³</b> = ${fmt(n**3)}</span>`).join('')}</div>`,'Les cubes de 1 à 20')+
+    P(`<p><b>n³ = n² × n</b>. Ex. 13³ = 169 × 13 = 2 197.</p><p><b>Racine cubique</b> : le dernier chiffre du cube donne celui de n. 2↔8 et 3↔7 s’échangent, les autres restent identiques. Ex. ∛4 913 finit par 7, et 4 913 est entre 16³ et 18³ : c’est 17.</p>`,'Astuces');
+  case 'alphabet':return P(`<div class="abc">${range(1,26).map(n=>`<span class="${n%5===0?'r':''}"><b>${L(n)}</b>${n}</span>`).join('')}</div>`,'Rang des lettres')+
+    P(`${N('E 5 · J 10 · O 15 · T 20 · Y 25')}<p>Moyen mnémotechnique : « EJOTY ». Pour une lettre, pars du repère le plus proche : R = T − 2 = 18.</p>`,'Les repères')+
+    P(`<div class="kv c4">${range(1,13).map(n=>`<span><b>${L(n)}</b> ↔ <b>${L(27-n)}</b></span>`).join('')}</div><p class="cap">Les deux rangs d’une paire font toujours 27.</p>`,'Les paires miroir');
+  case 'imbriques':return P(`<div class="imb">${range(2,5).map(n=>`<div>${gridVis(n)}<b>${n}×${n} → ${sumSq(n)}</b><span>${range(1,n).map(i=>i*i).join(' + ')}</span></div>`).join('')}</div>`,'Nombre total de carrés')+
+    P(`<p>Total dans une grille n×n = 1² + 2² + … + n² = n(n+1)(2n+1)/6.</p>${N('5 · 14 · 30 · 55')}`,'La formule');
+  case 'pytha':{const prim=[[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29]];
+    return P(`<div class="kv c1">${prim.map(([a,b,c])=>{const mult=TRIPLES.filter(t=>t[0]!==a&&t[0]%a===0&&t[0]/a===t[2]/c&&t[1]/b===t[2]/c);return`<span><b>${a} · ${b} · ${c}</b>${mult.length?` · multiples : ${mult.map(t=>t.join('-')).join(', ')}`:''}</span>`}).join('')}</div>`,'Triplets pythagoriciens')+
+    P('<p>a² + b² = c², avec c l’hypoténuse. Tout multiple d’un triplet en est un : 3-4-5 × 2 = 6-8-10, × 3 = 9-12-15, × 4 = 12-16-20, × 5 = 15-20-25.</p>','À savoir')}
+  case 'divis':return P(range(2,11).map(k=>`<div class="rule"><b>${k}</b><span>${RULES[k]}<br><span class="ex">${RULE_EX[k]}</span></span></div>`).join(''),'Critères de divisibilité');
+  case 'vitesse':return P(`<p class="big">m/s → km/h : <b>× 3,6</b><br>km/h → m/s : <b>÷ 3,6</b></p><p>Car 1 m/s = 3 600 m par heure = 3,6 km/h. Astuce : × 3,6 = × 18 ÷ 5, et ÷ 3,6 = ÷ 18 × 5.</p>`,'La règle')+
+    P(`<div class="kv c3">${[5,10,15,20,25,30,40,50,100].map(v=>`<span><b>${v}</b> m/s = ${fmt(v*3.6)} km/h</span>`).join('')}</div>${N('Repère : 10 m/s = 36 km/h')}`,'Valeurs à connaître');
+  case 'des':{let g='<div class="scroll"><table class="dice"><tr><th>+</th>'+range(1,6).map(i=>`<th>${i}</th>`).join('')+'</tr>';for(let a=1;a<=6;a++)g+=`<tr><th>${a}</th>`+range(1,6).map(b=>`<td class="s${a+b}">${a+b}</td>`).join('')+'</tr>';g+='</table></div>';
+    return P(`<div class="kv c3">${range(2,12).map(s=>{const w=ways(s),c=gcd(w,36);return`<span><b>${s}</b> : ${w}/36${c>1?` = ${w/c}/${36/c}`:''}</span>`}).join('')}</div>${N('1-2-3-4-5-6-5-4-3-2-1, sommet en 7')}`,'Probabilité de chaque somme')+
+    P(g+'<p class="cap">Les 36 résultats possibles : chaque diagonale correspond à une somme.</p>','Le tableau des 36 cas')+
+    P('<p>Nombre de cas pour une somme s : 6 − |s − 7|. Les sommes symétriques autour de 7 ont la même probabilité (4 et 10, 5 et 9…).</p>','Formule')}
+  case 'facto':return P(`<div class="kv c3">${range(0,8).map(n=>`<span><b>${n}!</b> = ${fmt(F[n])}</span>`).join('')}</div>`,'Factorielles de 0 à 8')+P('<p>n! = n × (n − 1)!, donc chaque valeur = la précédente × n. 0! = 1 par convention.</p>','À savoir');
+  case 'calendrier':return P(`<div class="months">${MONTHS.map((m,i)=>`<span class="${MDAYS[i]==='31'?'r':''}"><b>${MDAYS[i]==='28 ou 29'?'28/29':MDAYS[i]}</b>${m}</span>`).join('')}</div>${N('Poings fermés : bosse = 31, creux = 30. Juillet et août sont tous deux à 31.')}`,'Jours par mois')+
+    P(`<p><b>Bissextile (366 jours)</b> : divisible par 4, sauf les siècles, sauf s’ils sont divisibles par 400.</p><div class="chips">${YEARS.slice().sort().map(y=>`<span class="chip${isLeap(y)?' r':''}">${y}</span>`).join('')}</div><p class="cap">En rouge : bissextiles. 1900 et 2100 ne le sont pas, 2000 l’est.</p>`,'Années bissextiles');
+  }
+  return '';
+}
+
+
+/* ---------- apprentissage : cartes à retourner ---------- */
+function deck(id){
+  const one=(name,cards)=>[{name,cards}];
+  const cubeEx=n=>`${n}² × ${n} = ${n*n} × ${n} = ${fmt(n**3)}`;
+  switch(id){
+  case 'premiers':return[{name:'Les 25 premiers',cards:PRIMES.map(p=>({f:String(p),b:'Premier',n:primeEx(p)}))},
+    {name:'Les pièges',cards:[21,27,33,39,49,51,57,63,69,77,81,87,91,93].map(n=>{const f=smallestF(n);return{f:String(n),b:'Pas premier',n:`${n} = ${f} × ${n/f}`}})}];
+  case 'tables':return range(2,20).map(b=>({name:'× '+b,cards:range(1,20).map(a=>({f:`${a} × ${b}`,b:fmt(a*b),n:multEx(a,b)}))}));
+  case 'carres':return[{name:'1² à 10²',cards:range(1,10).map(n=>({f:`${n}²`,b:fmt(n*n),n:sqEx(n)}))},{name:'11² à 20²',cards:range(11,20).map(n=>({f:`${n}²`,b:fmt(n*n),n:sqEx(n)}))}];
+  case 'cubes':return[{name:'1³ à 10³',cards:range(1,10).map(n=>({f:`${n}³`,b:fmt(n**3),n:cubeEx(n)}))},{name:'11³ à 20³',cards:range(11,20).map(n=>({f:`${n}³`,b:fmt(n**3),n:cubeEx(n)}))}];
+  case 'alphabet':{const tip=n=>{const a=Math.min(25,Math.max(5,Math.round(n/5)*5)),g=n-a;return `Repère ${L(a)} = ${a}${g?`, puis ${g>0?'+':'−'}${Math.abs(g)}`:''}`};
+    const gs=[[1,5],[6,10],[11,15],[16,20],[21,26]].map(([a,b])=>({name:`${L(a)} à ${L(b)}`,cards:range(a,b).map(n=>({f:L(n),b:String(n),n:tip(n)}))}));
+    gs.push({name:'Numéro → lettre',cards:range(1,26).map(n=>({f:String(n),b:L(n),n:tip(n)}))});return gs}
+  case 'imbriques':return one('Grilles',range(2,5).map(n=>({f:`${n}×${n}`,v:gridVis(n),b:String(sumSq(n)),n:`${range(1,n).map(i=>i+'²').join(' + ')} = ${range(1,n).map(i=>i*i).join(' + ')} = ${sumSq(n)}`})));
+  case 'pytha':return one('Triplets',TRIPLES.map(([a,b,c])=>({f:`${a} · ${b} · ?`,b:String(c),n:`${a}² + ${b}² = ${a*a} + ${b*b} = ${c*c} = ${c}²`})));
+  case 'divis':return one('Critères',range(2,11).map(k=>({f:`÷ ${k}`,b:RULES[k],n:'Exemple : '+RULE_EX[k]})));
+  case 'vitesse':return[{name:'La règle',cards:[{f:'m/s → km/h',b:'× 3,6',n:'1 m/s = 3 600 m par heure = 3,6 km/h'},{f:'km/h → m/s',b:'÷ 3,6',n:'Repère : 36 km/h = 10 m/s'}]},
+    {name:'m/s → km/h',cards:[5,10,15,20,25,30,40,50,100].map(v=>({f:`${v} m/s`,b:fmt(v*18/5)+' km/h',n:`${v} × 36 ÷ 10`}))},
+    {name:'km/h → m/s',cards:[18,36,54,72,90,108,144,180].map(v=>({f:`${v} km/h`,b:(v*5/18)+' m/s',n:`${v} ÷ 18 × 5`}))}];
+  case 'des':return one('Sommes de 2 à 12',range(2,12).map(s=>{const w=ways(s),g=gcd(w,36);return{f:`somme = ${s}`,b:`${w}/36`,n:range(1,6).filter(a=>s-a>=1&&s-a<=6).map(a=>`(${a},${s-a})`).join(' ')+(g>1?` · soit ${w/g}/${36/g}`:'')}}));
+  case 'facto':return one('0! à 8!',range(0,8).map(n=>({f:`${n}!`,b:fmt(F[n]),n:n<2?'Par convention':`${range(1,n).reverse().join(' × ')}`})));
+  case 'calendrier':return[{name:'Les mois',cards:MONTHS.map((m,i)=>({f:m,b:MDAYS[i]+' jours',n:i===1?'29 les années bissextiles':MDAYS[i]==='31'?'Bosse du poing':'Creux du poing'}))},
+    {name:'Bissextiles',cards:[{f:'La règle',b:'Divisible par 4',n:'Sauf les siècles (1900, 2100), sauf s’ils sont divisibles par 400 (2000)'},...YEARS.slice().sort().map(y=>({f:String(y),b:isLeap(y)?'Bissextile':'Pas bissextile',n:y%4?'Pas divisible par 4':y%100?'Divisible par 4':y%400?'Siècle non divisible par 400':'Divisible par 400'}))]}];
+  }return[]}
+let LS=null;
+function openLearn(id,gi=0){const t=TH[id];const groups=deck(id);curT=t;LS={id,groups,gi:Math.min(gi,groups.length-1)};
+  $('#learnTitle').textContent=t.name;
+  $('#lgroups').innerHTML=groups.length>1?groups.map((g,i)=>`<button class="lg" data-g="${i}">${g.name}</button>`).join(''):'';
+  $('#lgroups').hidden=groups.length<2;startGroup(LS.gi);show('learn')}
+function startGroup(gi){LS.gi=gi;LS.queue=LS.groups[gi].cards.map((c,i)=>i);LS.pos=0;LS.known=0;LS.total=LS.queue.length;LS.flipped=false;
+  for(const b of document.querySelectorAll('.lg'))b.classList.toggle('on',+b.dataset.g===gi);
+  try{localStorage.setItem('carnet-learn-'+LS.id,gi)}catch(e){}
+  $('#ldone').hidden=true;$('#lcardWrap').hidden=false;renderCard()}
+function renderCard(){const c=LS.groups[LS.gi].cards[LS.queue[LS.pos]];LS.flipped=false;
+  const fr=$('#lfront');fr.innerHTML=c.f;const len=fr.textContent.length;fr.className='prompt'+(len>11?' s':len>6?' m':'');
+  $('#lvis').innerHTML=c.v||'';$('#lback').hidden=true;$('#ltap').hidden=false;$('#lbtns').hidden=true;
+  const ba=$('#lbackA');ba.textContent=c.b;ba.className='lba'+(c.b.length>14?' s':'');$('#lbackN').textContent=c.n||'';
+  $('#lprog').textContent=`${LS.known} / ${LS.total} sues`;$('#lbar').style.width=(LS.known/LS.total*100)+'%'}
+function flip(){if(!LS||LS.flipped)return;LS.flipped=true;$('#lback').hidden=false;$('#ltap').hidden=true;$('#lbtns').hidden=false}
+function rate(knew){if(!LS||!LS.flipped)return;const cur=LS.queue[LS.pos];
+  if(knew){LS.known++;LS.queue.splice(LS.pos,1)}else{LS.queue.splice(LS.pos,1);LS.queue.splice(Math.min(LS.pos+3,LS.queue.length),0,cur)}
+  if(!LS.queue.length){$('#lprog').textContent=`${LS.total} / ${LS.total} sues`;$('#lbar').style.width='100%';$('#lcardWrap').hidden=true;$('#ldone').hidden=false;
+    const next=LS.gi+1<LS.groups.length;$('#lNext').hidden=!next;if(next)$('#lNext').innerHTML=`Série suivante<small>${LS.groups[LS.gi+1].name}</small>`;return}
+  if(LS.pos>=LS.queue.length)LS.pos=0;renderCard()}
+$('#lcard').onclick=flip;
+$('#lKnow').onclick=()=>rate(true);
+$('#lAgain').onclick=()=>rate(false);
+$('#lgroups').onclick=e=>{const b=e.target.closest('.lg');if(b)startGroup(+b.dataset.g)};
+$('#learnBack').onclick=()=>{LS=null;renderHome();show('home')};
+$('#lRestart').onclick=()=>startGroup(LS.gi);
+$('#lNext').onclick=()=>startGroup(LS.gi+1);
+$('#lQuiz').onclick=()=>{const id=LS.id;LS=null;launch(startQuiz,[id],TH[id].name)};
+$('#lSheet').onclick=()=>{const id=LS.id;LS=null;openSheet(id)};
+$('#dLearn').onclick=()=>{closeDrawer();let g=0;try{g=+(localStorage.getItem('carnet-learn-'+curT.id)||0)}catch(e){}openLearn(curT.id,g)};
+$('#sheetLearn').onclick=()=>openLearn(curT.id);
+function renderLearnList(){$('#learnList').innerHTML=THEMES.map(t=>`<button class="lchip" data-l="${t.id}"><span class="glyph">${t.glyph}</span>${t.name}</button>`).join('')}
+$('#learnList').onclick=e=>{const b=e.target.closest('.lchip');if(b)openSheet(b.dataset.l)};
+$('#allSheets').onclick=()=>openSheet('all');
+document.addEventListener('keydown',e=>{if($('#learn').hidden||!LS)return;
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!LS.flipped)flip()}
+  else if(e.key==='1'||e.key==='ArrowLeft')rate(false);else if(e.key==='2'||e.key==='ArrowRight')rate(true)});
+
+renderHome();
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
+</script>
+</body>
+</html>
