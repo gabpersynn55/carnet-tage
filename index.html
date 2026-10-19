@@ -161,6 +161,27 @@ td:first-child,th:first-child{text-align:left}
 .dpanel .ds{color:var(--ink-soft);font-size:14px;margin-top:-6px}
 .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .confirm{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13px}
+#mdrawer{position:fixed;inset:0;z-index:20;background:rgba(10,16,40,.45);display:flex;align-items:flex-end;justify-content:center}
+#mdrawer .dpanel{max-height:92dvh;overflow-y:auto}
+.btn.custom{background:var(--chip-strong);color:var(--ink)}
+.mrow{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft)}
+.mrow .link{padding:4px 8px}
+.picks{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pick{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:6px 10px 6px 6px;border-radius:10px;background:var(--sheet);border:2px solid var(--rule-strong);text-align:left;font-size:13px;font-weight:600;line-height:1.2;min-width:0}
+.pick .glyph{width:30px;height:30px;font-size:11px;grid-row:auto}
+.pick .tick{width:20px;height:20px;border-radius:6px;border:2px solid var(--rule-strong);display:grid;place-items:center;font-size:12px;color:transparent}
+.pick.on{border-color:var(--ink)}
+.pick.on .tick{background:var(--ink);border-color:var(--ink);color:var(--sheet)}
+.segs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg{padding:10px 4px;border-radius:10px;background:var(--chip);font-weight:700;font-size:14px;display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.seg small{font-weight:500;font-size:11px;opacity:.8}
+.seg.on{background:var(--ink);color:var(--sheet)}
+.toggle{display:flex;align-items:center;gap:10px;text-align:left;font-weight:600;font-size:14px;padding:4px 0}
+.toggle small{display:block;font-weight:500;font-size:12px;color:var(--ink-soft)}
+.toggle .sw{flex:none;width:42px;height:24px;border-radius:12px;background:var(--chip-strong);position:relative;transition:background .15s}
+.toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--sheet);transition:transform .15s}
+.toggle.on .sw{background:var(--red)}
+.toggle.on .sw::after{transform:translateX(18px)}
 #tdrawer{position:fixed;inset:0;z-index:20;background:rgba(10,16,40,.45);display:flex;align-items:flex-end;justify-content:center}
 .defis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:12px;border-radius:12px;background:var(--ink);color:var(--sheet);min-width:0;transition:transform .12s}
@@ -261,6 +282,7 @@ a.lchip{color:inherit;text-decoration:none}
     <div class="cta">
       <button class="btn" id="goMix">Révision mixte<small>20 questions, tous thèmes</small></button>
       <button class="btn alt" id="goSprint">Sprint 60 s<small>Record : <span id="bestMix">0</span></small></button>
+      <button class="btn wide custom" id="goCustom"><span>Test à la carte</span><small id="goCustomN">tous les thèmes</small></button>
       <button class="btn ghost wide" id="goWeak"><span>Mes points faibles</span><small id="weakN">0 à revoir</small></button>
     </div>
     <div class="label">Fiches de révision · tout voir d’un coup d’œil</div>
@@ -358,6 +380,18 @@ a.lchip{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<div id="mdrawer" class="ovl" hidden>
+  <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h3 id="mTitle">Test à la carte</h3>
+    <div class="ds">Choisis les thèmes à mélanger, puis le format.</div>
+    <div class="mrow"><span id="mCount" class="num"></span><span><button class="link" id="mAll">Tout</button><button class="link" id="mNone">Aucun</button></span></div>
+    <div class="picks" id="mPicks"></div>
+    <div class="segs" id="mFmt"><button class="seg" data-f="quiz">Quiz<small>20 q.</small></button><button class="seg" data-f="1">1 min</button><button class="seg" data-f="3">3 min</button><button class="seg" data-f="5">5 min</button></div>
+    <button class="toggle" id="mTyped" aria-pressed="false"><span class="sw"></span><span>Taper les réponses quand c’est possible<small>calculs, alphabet, valeurs ; sinon propositions</small></span></button>
+    <button class="btn alt wide" id="mGo"><span>Lancer le test</span><small id="mBest"></small></button>
+    <button class="link" id="mClose">Fermer</button>
+  </div>
+</div>
 <div id="tdrawer" class="ovl" hidden>
   <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="tTitle">
     <h3 id="tTitle"></h3>
@@ -507,7 +541,7 @@ function renderHome(){
   $('#sToday').textContent=`${S.today}/${GOAL}`;$('#sTodayBar').style.width=Math.min(100,S.today/GOAL*100)+'%';
   $('#bestMix').textContent=S.best['sprint:mix']||0;
   const w=weakList().length;$('#weakN').textContent=w?`${w} à revoir`:'rien à revoir';$('#goWeak').disabled=!w;
-  renderDefis();renderLearnList();
+  renderDefis();renderLearnList();if(S.custom)$('#goCustomN').textContent=S.custom.ids.length===THEMES.length?'tous les thèmes':`${S.custom.ids.length} thème${S.custom.ids.length>1?'s':''} choisi${S.custom.ids.length>1?'s':''}`;
   $('#themes').innerHTML=THEMES.map(t=>{const m=mastery(t);return`<button class="tcard" data-t="${t.id}"><span class="glyph">${t.glyph}</span><span class="tn">${t.name}</span><span class="ts">${t.sub}</span><span class="bar"><i style="width:${m}%"></i></span><span class="pct"><span>Maîtrise</span><span class="num">${m} %</span></span></button>`}).join('');
 }
 function show(id){for(const s of['home','play','end','sheet','learn'])$('#'+s).hidden=s!==id;window.scrollTo(0,0)}
@@ -767,6 +801,33 @@ $('#allSheets').onclick=()=>openSheet('all');
 document.addEventListener('keydown',e=>{if($('#learn').hidden||!LS)return;
   if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!LS.flipped)flip()}
   else if(e.key==='1'||e.key==='ArrowLeft')rate(false);else if(e.key==='2'||e.key==='ArrowRight')rate(true)});
+
+
+/* ---------- test à la carte ---------- */
+if(!S.custom)S.custom={ids:allIds.slice(),fmt:'quiz',typed:false};
+function renderCustom(){const c=S.custom;
+  $('#mPicks').innerHTML=THEMES.map(t=>`<button class="pick${c.ids.includes(t.id)?' on':''}" data-p="${t.id}" aria-pressed="${c.ids.includes(t.id)}"><span class="glyph">${t.glyph}</span><span>${t.name}</span><span class="tick">✓</span></button>`).join('');
+  for(const b of document.querySelectorAll('#mFmt .seg'))b.classList.toggle('on',b.dataset.f===c.fmt);
+  $('#mTyped').classList.toggle('on',c.typed);$('#mTyped').setAttribute('aria-pressed',c.typed);
+  const n=c.ids.length;$('#mCount').textContent=`${n} thème${n>1?'s':''} sélectionné${n>1?'s':''}`;
+  $('#mGo').disabled=!n;
+  const key=customKey();$('#mBest').textContent=c.fmt==='quiz'?'':`Record : ${S.best[key]||0}`;
+  $('#goCustomN').textContent=n===THEMES.length?'tous les thèmes':`${n} thème${n>1?'s':''} choisi${n>1?'s':''}`}
+function customKey(){const c=S.custom;return `custom:${c.ids.slice().sort().join('+')}:${c.fmt}${c.typed?':t':''}`}
+$('#goCustom').onclick=()=>{renderCustom();$('#mdrawer').hidden=false};
+$('#mClose').onclick=()=>{$('#mdrawer').hidden=true};
+$('#mdrawer').onclick=e=>{if(e.target.id==='mdrawer')$('#mdrawer').hidden=true};
+$('#mPicks').onclick=e=>{const b=e.target.closest('.pick');if(!b)return;const id=b.dataset.p,ids=S.custom.ids;
+  S.custom.ids=ids.includes(id)?ids.filter(x=>x!==id):[...ids,id];save();renderCustom()};
+$('#mAll').onclick=()=>{S.custom.ids=allIds.slice();save();renderCustom()};
+$('#mNone').onclick=()=>{S.custom.ids=[];save();renderCustom()};
+$('#mFmt').onclick=e=>{const b=e.target.closest('.seg');if(!b)return;S.custom.fmt=b.dataset.f;save();renderCustom()};
+$('#mTyped').onclick=()=>{S.custom.typed=!S.custom.typed;save();renderCustom()};
+function startCustom(){const c=S.custom;if(!c.ids.length)return;const ids=c.ids.slice();const n=ids.length;
+  const label=n===THEMES.length?'Test mixte complet':`Test à la carte · ${n} thème${n>1?'s':''}`;
+  if(c.fmt==='quiz')start({mode:'quiz',themes:ids,total:20,label,typed:c.typed});
+  else{const min=+c.fmt;start({mode:'sprint',themes:ids,dur:min*60000,typed:c.typed,label:`${label} · ${min} min`,bestKey:customKey()})}}
+$('#mGo').onclick=()=>{$('#mdrawer').hidden=true;launch(startCustom)};
 
 renderHome();
 </script>
