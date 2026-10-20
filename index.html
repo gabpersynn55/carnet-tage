@@ -518,6 +518,29 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn{background:var(--btn);color:#fff}
 .btn.alt{background:var(--red);color:#fff}
 .btn.ghost,.btn.custom{background:var(--sheet);color:var(--ink)}
+/* ---- Fiches de cours logique ---- */
+#lCoursList{display:flex;flex-direction:column;gap:10px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fcard{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:center;text-align:left;padding:12px;border-radius:var(--radius);background:var(--sheet);box-shadow:0 1px 2px var(--shadow),0 0 0 1px var(--rule);min-width:0}
+.fcard:active{transform:scale(.97)}
+.fcard .glyph{grid-row:1/3;width:34px;height:34px;font-size:12px}
+.fcard .tn{font-weight:700;font-size:14px;line-height:1.25;letter-spacing:-.01em}
+.fcard .ts{font-size:12px;color:var(--ink-soft);line-height:1.3}
+#lcBody .paper{margin-top:12px}
+#lcBody p{margin:0 0 8px;line-height:1.55}
+.fl,.fo{margin:4px 0 8px;padding-left:22px;line-height:1.55}
+.fl li,.fo li{margin:3px 0}
+.fo li::marker{font-weight:800;color:var(--accent)}
+.fh{font-weight:700;font-size:14px;margin:14px 0 2px!important;color:var(--accent)}
+.fex{font-size:14.5px;background:var(--chip);border-radius:10px;padding:9px 12px;margin-top:10px!important}
+.fnb{font-size:14px;color:var(--ink-soft);border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin-top:10px!important}
+.fsrc{font-size:12px;color:var(--ink-soft);text-align:center;margin-top:18px!important}
+.ft{width:100%;margin:6px 0 4px;font-variant-numeric:normal}
+.ft td,.ft th{text-align:left;padding:7px 8px;font-size:14.5px;vertical-align:top}
+.ft td:first-child{font-weight:700;white-space:nowrap;width:1%}
+.fnav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.fnav .btn{font-size:13.5px;padding:12px;align-items:center;text-align:center}
+.lmeth .link{padding:4px 0;font-size:12.5px;color:var(--accent);font-weight:600}
 
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -546,7 +569,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="label">Fiches de révision <em>tout voir d’un coup d’œil</em></div>
     <div class="lchips" id="learnList"></div>
     <button class="btn ghost wide" id="allSheets" style="margin-top:10px;width:100%"><span>Toutes les fiches sur une page</span><small>12 thèmes</small></button>
-    <p class="cap" style="text-align:center;margin-top:24px!important">Version 11 · 20 oct. 2026</p>
+    <p class="cap" style="text-align:center;margin-top:24px!important">Version 13 · 20 oct. 2026</p>
     <div class="foot" id="resetZone"><button class="link" id="resetBtn">Remettre la progression à zéro</button></div>
   </section>
 
@@ -632,9 +655,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <button class="btn alt" id="lGoSerie">Série TAGE<small>15 questions · 20 min</small></button>
       <button class="btn ghost" id="lGoErr">Mes erreurs<small id="lErrN">0 à revoir</small></button>
     </div>
-    <div class="label">Chapitres du cours <em>touche pour choisir</em></div>
+    <div class="label">Chapitres à travailler <em>touche pour choisir</em></div>
     <div class="lchaps" id="lChaps"></div>
     <p class="lnote" id="lChapNote"></p>
+    <div class="label">Cours et méthode <em>fiches tirées du cours</em></div>
+    <div id="lCoursList"></div>
     <div class="foot" id="lResetZone"><button class="link" id="lResetBtn">Remettre la logique à zéro</button></div>
   </section>
 
@@ -670,6 +695,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <button class="btn" id="lEErr">Revoir mes erreurs</button>
       <button class="btn ghost wide" id="lEHome"><span>Retour à la logique</span></button>
     </div>
+  </section>
+
+  <section id="lcours" hidden>
+    <div class="sheethead"><button class="x" id="lcBack" aria-label="Retour">←</button><h2 id="lcTitle"></h2></div>
+    <div id="lcBody"></div>
   </section>
 </div>
 
@@ -866,7 +896,7 @@ function renderHome(){
   renderDefis();renderLearnList();if(S.custom)$('#goCustomN').textContent=S.custom.ids.length===THEMES.length?'tous les thèmes':`${S.custom.ids.length} thème${S.custom.ids.length>1?'s':''} choisi${S.custom.ids.length>1?'s':''}`;
   $('#themes').innerHTML=THEMES.map(t=>{const m=mastery(t);return`<button class="tcard" data-t="${t.id}"><span class="glyph">${t.glyph}</span><span class="tn">${t.name}</span><span class="ts">${t.sub}</span><span class="bar"><i style="width:${m}%"></i></span><span class="pct"><span>Maîtrise</span><span class="num">${m} %</span></span></button>`}).join('');
 }
-function show(id){for(const s of['home','play','end','sheet','learn','lhome','lplay','lend'])$('#'+s).hidden=s!==id;
+function show(id){for(const s of['home','play','end','sheet','learn','lhome','lplay','lend','lcours'])$('#'+s).hidden=s!==id;
   const tabs=id==='home'||id==='lhome';$('#tabbar').hidden=!tabs;document.body.classList.toggle('tabs-on',tabs);
   if(tabs){$('#tabCoeur').classList.toggle('on',id==='home');$('#tabLogique').classList.toggle('on',id==='lhome');try{localStorage.setItem('carnet-tab',id)}catch(e){}}
   window.scrollTo(0,0)}
@@ -1362,7 +1392,7 @@ function fmt(s){return esc(s).replace(/([A-Za-z0-9]+)\^([A-Za-z0-9]+)/g,'$1<sup>
 function corrHTML(q,ok){
   return (ok===undefined?'':`<div class="lverdict ${ok?'ok':'ko'}">${ok?'Bonne réponse !':'Raté : la bonne réponse est '+'abcde'[q.a]+')'}</div>`)+
     q.s.map(([t,x])=>`<div class="lstep${t==='Réponse'?' ans':''}"><span class="st">${esc(t)}</span><span class="sx">${fmt(x)}</span></div>`).join('')+
-    `<div class="lmeth">Méthode du cours : ${q.m.map(m=>`<span>${esc(m)}</span>`).join('')}</div>`;
+    `<div class="lmeth">Méthode du cours : ${q.m.map(m=>`<span>${esc(m)}</span>`).join('')} <button class="link" data-fiche="${q.c}">Revoir la fiche du chapitre →</button></div>`;
 }
 function answerL(i){
   if(!S||S.locked)return;S.locked=true;const q=S.q;const ok=i===q.a;
@@ -1407,7 +1437,169 @@ document.addEventListener('keydown',e=>{if($('#lplay').hidden||!S)return;
   const k='abcde12345'.indexOf(e.key.toLowerCase());if(k>=0&&!S.locked){answerL(k%5);return}
   if((e.key==='Enter'||e.key===' ')&&!$('#lNextWrap').hidden){e.preventDefault();nextL()}});
 window.__logicHome=renderLHome;
+window.__logicTrain=c=>{M.sel=[c];save();startL('quick')};
 window.__logicSvg=svgFrame;
+})();
+
+/* ================= LOGIQUE : fiches de cours + méthode de résolution =================
+   Contenu tiré exclusivement du cours de logique fourni (Transcript_cours_de_logique.pdf). */
+(function(){
+const $=s=>document.querySelector(s);
+const P=(t,h)=>`<div class="paper"><div class="ptitle">${t}</div>${h}</div>`;
+const UL=a=>`<ul class="fl">${a.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+const OL=a=>`<ol class="fo">${a.map(x=>`<li>${x}</li>`).join('')}</ol>`;
+const EX=t=>`<p class="fex"><b>Exemple du cours :</b> ${t}</p>`;
+const NB=t=>`<p class="fnb">${t}</p>`;
+const SRC='<p class="fsrc">Source : cours de logique fourni, sans ajout.</p>';
+
+const ORD_NUMX=['<b>Colonne</b> : variations nulles, constantes, croissantes, alternées',
+  '<b>Petite diagonale</b> : alternance C1–C2, C2–C3… : variations nulles, constantes, croissantes, alternées',
+  '<b>Moyenne diagonale</b> : alternance C1–C2–C3–C2–C1 : variations nulles, constantes, croissantes, alternées',
+  '<b>Grande diagonale</b> : alternance C1–C3–C1–C3 : variations nulles, constantes, croissantes, alternées',
+  '<b>Somme</b> : somme croissante ou décroissante des chiffres',
+  '<b>Produit</b> : produit croissant ou décroissant des chiffres'];
+const ORD_ALPI=['Les barres','Les voyelles / consonnes','Écart mathématique interne','Mot palindromique','Produit / somme des rangs constant','Logiques internes rares (mot existant ou acronyme, chiffres romains)'];
+const ORD_ALPX=['Variation des rangs','Somme / produit des rangs','Déplacement de voyelles','Lettres symétriques','Somme / produit des barres'];
+const REC_NUMI=['Carrés / cubes (y compris inversés)','Multiples (y compris inversés)','Nombres premiers (y compris inversés)','Somme ou produit des chiffres constant','Nombres palindromiques','Somme interne','Produit interne','Produit interne fictif','Puissance','Puissance fictive','Écart interne'];
+const LECT_L=['Rang alphabétique','Nombre de barres','Voyelle / consonne','Symétrie','Initiale'];
+const LECT_F=['Le nombre de côtés','Le nombre de côtés parallèles','Le nombre d’angles droits','Le nombre d’intersections'];
+
+const F=[
+{id:'methode',g:'✓',t:'Méthode de résolution',s:'l’ordre de test de chaque famille',h:()=>
+ P('Le principe à appliquer à chaque grille',
+  `<p>Chaque question numérique ou alphabétique présente une <b>ligne</b> et une <b>colonne</b> de 5 termes qui se croisent sur le « ? ». Le terme manquant doit respecter à la fois :</p>`+
+  UL(['la logique verticale (entre les termes de la colonne) ;','la logique horizontale (entre les termes de la ligne).'])+
+  `<p>Une seule réponse est correcte : celle qui satisfait les deux logiques simultanément. <b>Chaque logique permet d’éliminer des réponses</b> : une réponse correcte verticalement mais fausse horizontalement est incorrecte.</p>`+
+  EX('les termes horizontaux sont des nombres premiers, on élimine 12, 98 et 51 ; les termes verticaux sont pairs, on élimine 13 et on garde 2.'))+
+ P('Numérique · extra-terme : ordre à suivre', OL(ORD_NUMX)+NB('Les variations peuvent se lire du haut vers le bas ou du bas vers le haut.'))+
+ P('Alphabétique · intra-terme : ordre de résolution', OL(ORD_ALPI))+
+ P('Alphabétique · extra-terme : ordre de résolution', OL(ORD_ALPX)+NB('La variation des rangs combine toujours un type de déplacement (colonne, petite, moyenne, grande diagonale) avec un type de variation (nulle, constante, croissante, décroissante, alternance).'))+
+ P('Numérique · intra-terme : la liste à passer en revue',
+  `<p>Le cours ne donne pas d’ordre de test pour cette famille. Il récapitule les logiques dans cet ordre :</p>`+OL(REC_NUMI)+
+  NB('Ce type de logique est souvent rapide à identifier si vous connaissez bien les principales structures numériques.'))+
+ P('Logiques graphiques : ce qu’il faut regarder',
+  `<p>Le cours ne donne pas d’ordre de test pour les graphiques. Il présente :</p>`+
+  `<p class="fh">Les 5 façons de lire une lettre (à bien retenir)</p>`+OL(LECT_L)+
+  `<p class="fh">Les 4 façons de lire une figure</p>`+OL(LECT_F)+
+  `<p class="fh">Les types de déplacement</p>`+UL(['Linéaire : horaire et anti-horaire','Diagonales : d’un coin à l’autre sans changer de sens, ou en « vague »','Déplacement croissant : arithmétique (1 → 2 → 3) ou géométrique (1 → 2 → 4)','Haut-bas / gauche-droite (avec ou sans case milieu)','Axe symétrique : vertical, horizontal ou diagonal'])+
+  `<p class="fh">Les logiques contextuelles</p>`+UL(['Damiers','Horloge','Boussole','Symboles et rapports mathématiques','Croix'])+
+  NB('Dans plusieurs exemples graphiques du cours (côtés parallèles, angles droits, horloge, boussole, symboles, croix), une première logique élimine une partie des propositions, puis une deuxième logique permet de trancher entre celles qui restent.'))+SRC},
+
+{id:'bases',g:'i',t:'Les bases',s:'termes, lectures, intra / extra',h:()=>
+ P('Le sous-test',`<p>Il évalue la capacité à identifier des régularités entre des termes, à raisonner rapidement et à éliminer des propositions incorrectes. Trois types d’exercices :</p>`+
+  UL(['<b>Logiques numériques</b> : séries de chiffres (ex. : 47, 213, 864…)','<b>Logiques alphabétiques</b> : séries de lettres (ex. : AB, DKT, YL…)','<b>Logiques graphiques</b> : suites d’images ou de symboles avec un motif ou un mouvement'])+
+  `<p>L’objectif : trouver le terme manquant qui respecte la logique et s’insère dans la série.</p>`)+
+ P('Un terme',UL(['En numérique : 2, 3 ou parfois 4 chiffres (ex. : 47, 132, 2479)','En alphabétique : 2 ou 3 lettres (ex. : AB, QL, JMN)']))+
+ P('Trois façons de lire un terme',UL(['<b>En totalité</b> : le terme est un bloc unique. 13 se lit « treize » si la logique est « c’est un nombre premier ».','<b>Décomposée</b> : chiffre par chiffre ou lettre par lettre, souvent colonne par colonne. 13 devient 1 (C1) et 3 (C2) si la logique est C1 + 2 = C2.','<b>Partielle</b> : une seule partie du terme sert. 129 → seule C1 + 1 = C2 est utilisée, C3 n’intervient pas.']))+
+ P('Intra-terme ou extra-terme',
+  `<p><b>Intra-terme</b> : règle interne au terme. Chaque terme valide la même règle, sans lien entre eux (ex. : nombre premier ; produit des deux premiers chiffres = troisième ; carré parfait ; multiple de 17).</p>`+
+  `<p><b>Extra-terme</b> : règle qui relie les termes entre eux. Pris seul, un terme n’a pas de sens logique (ex. : la colonne 1 augmente de +1 ; la somme des termes décroît ; une diagonale du même chiffre).</p>`+
+  EX('7 - 8 - ? - 10 - 11 : la somme des chiffres est croissante, on cherche un terme dont la somme vaut 9 → 63.'))+
+ P('Un sous-test rentable',`<p>Les débuts peuvent être laborieux, mais avec l’entraînement les mécanismes se répètent, les logiques sautent aux yeux et les réponses deviennent automatiques : avec de bons réflexes, on peut y gagner beaucoup de points rapidement.</p>`)+SRC},
+
+{id:'num-intra',g:'123',t:'Numérique · intra-terme',s:'11 logiques internes au terme',h:()=>
+ P('a. Carrés / cubes',`<p>Le terme est un carré parfait (ex. : 121, 625) ou un cube parfait (ex. : 512, 729).</p><p><b>Variante :</b> carré / cube inversé (841 → 148, 729 → 927).</p>`+EX('927 = 729 à l’envers (9³), 215 = 512 à l’envers (8³) ; seul 343 = 7³ convient.'))+
+ P('b. Multiples',`<p>Le terme est un multiple d’un nombre donné : 2, 3, 7, 11, 17, etc.</p><p><b>Variante :</b> multiple caché par une inversion (153 → 351, multiple de 17).</p>`+EX('41 → 14 = 7 × 2, 65 → 56 = 7 × 8 : multiples de 7 inversés ; 24 convient (42 = 7 × 6).'))+
+ P('c. Nombres premiers',`<p>Le terme est un nombre premier (ex. : 13, 29, 71).</p><p><b>Variante :</b> ordre des chiffres inversé (31 → 13, 32 → 23).</p>`+NB('93 et 51 ne sont pas premiers malgré les apparences : 90 + 3 et 30 + 21.'))+
+ P('d. Somme ou produit constant',`<p>La somme ou le produit des chiffres du terme est toujours le même.</p>`+EX('somme des chiffres = 6 → la seule réponse qui la respecte (6 + 0 + 0 = 6) ; produit des chiffres = 24 → 641 (6 × 4 × 1).'))+
+ P('e. Nombres palindromiques',`<p>Le terme se lit de la même façon dans les deux sens (121, 545, 1331). C’est une forme visuelle facile à trouver, pas un calcul.</p>`)+
+ P('f. Somme interne',UL(['C1 + C2 = C3 (426 → 4 + 2 = 6)','C1 + C3 = C2 (462 → 4 + 2 = 6)','C1 = C2 + C3 (624 → 6 = 2 + 4)']))+
+ P('g. Produit interne',UL(['C1 × C2 = C3 (326 → 3 × 2 = 6)','C1 × C3 = C2 (362 → 3 × 2 = 6)','C1 = C2 × C3 (623 → 6 = 2 × 3)'])+EX('C1 × C2 = C3 → 020 (0 × 2 = 0).'))+
+ P('g bis. Produit interne fictif',`<p>Le produit d’une colonne et d’un chiffre donne les deux autres colonnes.</p>`+UL(['C1 × 3 = C2C3 (721 → 7 × 3 = 21)','C3 × 5 = C1C2 (357 → 7 × 5 = 35)','C2 × 2 = C1C3 (198 → 9 × 2 = 18)'])+EX('C1 × 9 = C2C3 → 981 (9 × 9 = 81).'))+
+ P('h. Puissance',`<p>Une colonne à la puissance d’une autre donne la troisième.</p>`+UL(['C1^C2 = C3 (329 → 3² = 9)','C2^C3 = C1 (190 → 9⁰ = 1)'])+EX('C1^C2 = C3 → 238 (2³ = 8).'))+
+ P('h bis. Puissance fictive',`<p>Une colonne élevée à une puissance donne les deux autres.</p>`+UL(['C1³ = C2C3 (464 → 4³ = 64)','C2² = C1C3 (366 → 6² = 36)'])+EX('C1² = C2C3 → 636 (6² = 36).'))+
+ P('i. Écart interne',`<p>Écart constant entre les colonnes du terme :</p>`+UL(['C1 + 2 = C2 (359 → 3 + 2 = 5)','C1 + 3 = C3 (356 → 3 + 3 = 6)']))+
+ P('Récapitulatif du cours',OL(REC_NUMI))+SRC},
+
+{id:'num-extra',g:'1→2',t:'Numérique · extra-terme',s:'variations × diagonales',h:()=>
+ P('Le principe',`<p>Soit un chiffre lie les différents termes, soit leur somme ou leur produit les lie. Chaque logique extra-terme numérique combine <b>un type de variation</b> avec <b>un type de diagonale</b> (sauf les sommes et produits).</p>`)+
+ P('Les 5 variations',`<table class="ft"><tr><th>Variation</th><th>Écarts</th></tr><tr><td>Nulle</td><td>+0 +0 +0</td></tr><tr><td>Constante</td><td>+1 +1 +1, ou +2 +2 +2, voire +3 +3 +3</td></tr><tr><td>Croissante</td><td>+0 +1 +2 +3</td></tr><tr><td>Décroissante</td><td>+3 +2 +1 +0</td></tr><tr><td>Positive / négative</td><td>+1 −2 +3 −4…</td></tr></table>`+NB('Les variations peuvent se lire du haut vers le bas ou du bas vers le haut : 9 8 7 6 5 est −1 vers le bas, ou +1 vers le haut.'))+
+ P('Les 4 structures',`<table class="ft"><tr><th>Structure</th><th>Colonnes lues</th></tr><tr><td>Colonne</td><td>C1 C1 C1 C1 (la plus facile à repérer)</td></tr><tr><td>Petite diagonale</td><td>C1 C2 C1 C2…, C2 C3 C2 C3 (2 colonnes sur 3)</td></tr><tr><td>Moyenne diagonale</td><td>C1 C2 C3 C2 C1 (de C1 à C3 en passant par C2)</td></tr><tr><td>Grande diagonale</td><td>C1 C3 C1 C3 C1 (n’utilise jamais C2)</td></tr></table>`+
+  EX('moyenne diagonale C2C3C2C1 avec une variation constante +2 → terme avec 5 en C2 (955) ; variation croissante +0 +1 +2 +3 en grande diagonale C1C3C1 → terme avec 2 en C1 (238).'))+
+ P('Somme croissante / décroissante',`<p>On regarde la somme des 3 chiffres de chaque terme, qui peut être croissante (+1, +2, +3, +4, +5) ou décroissante.</p>`+EX('la somme augmente de +1, on cherche une somme de 12 → 282.'))+
+ P('Produit croissant / décroissant',`<p>Même principe sur le produit des 3 chiffres. La croissance peut être arithmétique (+2 entre chaque produit, par exemple) ou géométrique (× 2, par exemple).</p>`+EX('produits 4, 8, 16, 32, 64 (× 2), on cherche un produit de 16 → 144.'))+
+ P('Ordre à suivre',OL(ORD_NUMX))+SRC},
+
+{id:'alpha-intra',g:'ABC',t:'Alphabétique · intra-terme',s:'barres, voyelles, rangs…',h:()=>
+ P('Les rangs alphabétiques',`<p>À apprendre par cœur : la traduction d’une lettre en rang doit être automatique. N’utilisez pas la méthode EJOTY, ne comptez pas sur vos doigts.</p>`+UL(['Les flashcards (Anki)','Des moyens mnémotechniques (R = 18, l’âge de la majorité, de la R-aison)','Traduire les plaques d’immatriculation et de rue au quotidien']))+
+ P('a. Les barres',`<p>Toutes les lettres ont le même nombre de barres, ou sont des lettres à barres.</p><table class="ft"><tr><th>Barres</th><th>Lettres</th></tr><tr><td>1</td><td>I</td></tr><tr><td>2</td><td>L T V X</td></tr><tr><td>3</td><td>A F H K N Y Z</td></tr><tr><td>4</td><td>E M W</td></tr></table>`+NB('Selon sa manière d’être écrit, Y compte 2 barres (y) ou 3 barres (Y).')+EX('chaque terme a des lettres avec le même nombre de barres → LXT.'))+
+ P('b. Voyelles / consonnes',`<p>Le terme est composé uniquement de voyelles (A, E, I, O, U, Y) ou uniquement de consonnes.</p>`+EX('doublets de voyelles → AA.'))+
+ P('c. Écart mathématique interne',`<p>Relation entre les rangs des lettres, comme en numérique :</p>`+UL(['C1 + 2 = C2 (AC : 1 + 2 = 3)','C1 × C2 = C3 (CDL : 3 × 4 = 12)','C2 − C1 = C3 (MLA : 13 − 12 = 1)'])+EX('C1 + C2 = C3 → ARS : A (1) + R (18) = S (19).'))+
+ P('d. Mot palindromique',`<p>La première et la dernière lettre sont identiques : C1 = C3 (ABA, DFD, TGT).</p>`+EX('→ WEW.'))+
+ P('e. Somme / produit des rangs constant',`<p>La somme ou le produit des rangs des lettres est constant dans tous les termes.</p>`+EX('somme des rangs = 21 → SB : S (19) + B (2) = 21.'))+
+ P('f. Logiques internes rares',UL(['Un <b>mot existant</b> ou un <b>acronyme connu</b> : SAC, BAR, RUE, LIT… ; ONU, RER, TER, USB…','Uniquement des <b>chiffres romains</b> : I, V, X, L, C, D, M (ex. : DCD).']))+
+ P('Ordre de résolution',OL(ORD_ALPI))+
+ NB('Dans les questions de l’appli, la lettre Y n’apparaît jamais, à cause de l’ambiguïté signalée par le cours.')+SRC},
+
+{id:'alpha-extra',g:'A→B',t:'Alphabétique · extra-terme',s:'rangs, voyelles, symétries…',h:()=>
+ P('a. Variation des rangs',`<p>Même principe que les variations numériques : on suit le rang (A = 1 … Z = 26) d’une même position à travers une colonne ou une diagonale. Elle combine toujours un type de déplacement avec un type de variation.</p>`+
+  `<p class="fh">4 types de déplacement</p>`+UL(['Colonne','Petite diagonale','Moyenne diagonale','Grande diagonale'])+
+  `<p class="fh">5 types de variation (exemples du cours)</p><table class="ft"><tr><td>Nulle</td><td>+0 +0 +0 +0</td></tr><tr><td>Constante</td><td>+1 +1 +1 +1</td></tr><tr><td>Croissante</td><td>+1 +2 +3 +4</td></tr><tr><td>Décroissante</td><td>+4 +3 +2 +1</td></tr><tr><td>Alternance +/−</td><td>+1 −2 +3 −4</td></tr></table>`)+
+ P('b. Somme ou produit des rangs croissant / décroissant',`<p>On additionne ou on multiplie les rangs des lettres d’un terme et on observe l’évolution d’un terme à l’autre.</p>`+EX('sommes 21, 22, ?, 24, 25 → somme 23 : KL (11 + 12).'))+
+ P('c. Déplacement de voyelles',`<p>Une position (colonne ou diagonale) est faite uniquement de voyelles (A, E, I, O, U, Y) : toutes les lettres en C2, la diagonale C1C2, etc.</p>`+EX('C1 composée uniquement de voyelles → IKL.'))+
+ P('d. Lettres symétriques',`<table class="ft"><tr><td>Symétrie verticale</td><td>A H I M O T U V W X Y</td></tr><tr><td>Symétrie horizontale</td><td>B C D E H I K O X</td></tr><tr><td>Les deux</td><td>H I O X</td></tr></table><p>Variantes : toutes les lettres en C1 symétriques, la moyenne diagonale C1C2C3 en lettres symétriques, etc.</p>`+NB('Y est symétrique écrit en majuscule (Y), pas en minuscule (y).')+EX('C2 uniquement en lettres symétriques horizontalement → LOT.'))+
+ P('e. Somme / produit des barres croissant / décroissant',`<p>La somme ou le produit des barres des lettres augmente ou diminue de terme en terme.</p>`+EX('sommes des barres 6, 7, ?, 9, 10 → 8 : XVW.'))+
+ P('Ordre de résolution',OL(ORD_ALPX))+SRC},
+
+{id:'lettres',g:'A△',t:'Lettres dans les figures',s:'les 5 façons de lire une lettre',h:()=>
+ P('Le principe',`<p>Dans les logiques spatiales, une lettre est analysée pour ce qu’elle représente visuellement ou pour son lien avec d’autres éléments spatiaux, pas seulement pour son rang.</p>`)+
+ P('1. Rang alphabétique',`<p>Liens entre la somme, le produit, l’écart des rangs, etc.</p>`+EX('l’écart des rangs donne le nombre de côtés : HL (8 → 12) = 4, carré ; QT (17 → 20) = 3, triangle ; LX (12 → 24) = 12, croix ; on choisit GL (7 → 12) = 5, pentagone.'))+
+ P('2. Nombre de barres',`<p>Liens entre la somme, le produit, l’écart du nombre de barres, etc.</p>`+EX('barres de la lettre + côtés de la figure = 6 → A (3) dans un triangle (3).'))+
+ P('3. Voyelle / consonne',EX('suite de voyelles A - E - I avec une rotation de 90° → un O tourné de 90°.'))+
+ P('4. Symétrie',`<p>Verticale : A H I M O T U V W X Y. Horizontale : B C D E H I K O X. Les deux : H I O X.</p>`+EX('déplacement de coin en coin d’une lettre symétrique verticalement → une lettre symétrique verticalement dans le coin bas-gauche.'))+
+ P('5. Initiale',`<p>La lettre peut être l’initiale d’un mot lié : le nom de la figure où elle est inscrite, le résultat d’une opération, etc.</p>`+EX('Un Deux ; Trois Quatre ; Cinq Six → SH (Sept Huit).'))+
+ P('À retenir',OL(LECT_L)+NB('Ces 5 lectures seront liées à d’autres logiques que vous devrez également maîtriser.'))+SRC},
+
+{id:'deplacements',g:'↻',t:'Déplacements',s:'coins, diagonales, axes',h:()=>
+ P('Le principe',`<p>Il faut maîtriser les mouvements récurrents : linéaires, circulaires, diagonaux ou symétriques. Ils sont mis en lien avec d’autres logiques (lettres, chiffres, figures) pour trouver la réponse.</p>`)+
+ P('a. Linéaire : horaire et anti-horaire',`<p>Les éléments se déplacent de coin en coin dans le sens ou le sens inverse des aiguilles d’une montre.</p>`)+
+ P('b. Diagonales',`<p>Déplacement d’un coin à l’autre (haut gauche → bas droit, etc.). Deux types :</p>`+OL(['D’un coin à l’autre sans changer de sens (haut gauche – bas droit / bas droit – haut gauche)','Alternance de diagonales « en vague » (haut gauche – bas droit / bas gauche – haut droit)']))+
+ P('c. Déplacement croissant',`<p>Le nombre de déplacements de coin en coin augmente :</p>`+UL(['<b>Arithmétique</b> : 1 case → 2 cases → 3 cases → …','<b>Géométrique</b> : le nombre double, 1 → 2 → 4 → …']))+
+ P('d. Haut-bas / gauche-droite',`<p>Déplacement rectiligne, vertical (haut → bas ou inverse) ou horizontal (gauche → droite ou inverse).</p>`+NB('Le déplacement peut passer par la case milieu (haut-milieu-bas, gauche-milieu-droite) : le 4ᵉ élément est alors au milieu.'))+
+ P('e. Axe symétrique',UL(['Vertical : symétrie gauche-droite','Horizontal : symétrie haut-bas','Diagonal : symétrie en miroir ↘ ou ↙']))+SRC},
+
+{id:'figures',g:'⬡',t:'Figures',s:'les 4 façons de lire une figure',h:()=>
+ P('Le principe',`<p>Chaque case contient une ou plusieurs formes. On observe les caractéristiques internes de chaque figure et leur lien avec les autres éléments (nombre, lettre, autre figure…).</p>`)+
+ P('a. Le nombre de côtés',`<table class="ft"><tr><td>3</td><td>Triangle</td></tr><tr><td>4</td><td>Quadrilatère (carré, rectangle, losange, trapèze)</td></tr><tr><td>5</td><td>Pentagone</td></tr><tr><td>6</td><td>Hexagone</td></tr><tr><td>7</td><td>Heptagone</td></tr><tr><td>8</td><td>Octogone</td></tr><tr><td>9</td><td>Ennéagone</td></tr><tr><td>10</td><td>Décagone</td></tr></table>`+EX('les côtés augmentent de +1 et le rang de la lettre vaut le triple du nombre de côtés → un hexagone avec un R (18 = 6 × 3).'))+
+ P('b. Le nombre de côtés parallèles',EX('paires de côtés parallèles 0, 1, 2 → il en faut 3 ; il reste deux propositions, et comme 2, 3 et 5 sont premiers, on choisit celle avec 7.'))+
+ P('c. Le nombre d’angles droits',EX('angles droits +1 → 4 angles droits ; le nombre de barres de la lettre égale le nombre d’angles droits → la proposition avec 4 barres.'))+
+ P('d. Le nombre d’intersections',EX('1, 4, 9 intersections : carrés parfaits de 1, 2, 3 → il en faut 16.'))+SRC},
+
+{id:'contexte',g:'◷',t:'Logiques contextuelles',s:'damier, horloge, boussole…',h:()=>
+ P('Le principe',`<p>La solution repose sur la reconnaissance de structures familières : damier, horloge, boussole, symboles connus…</p>`)+
+ P('a. Les damiers',`<p>Grille de cases noires et blanches (souvent 2 × 2, 3 × 3 ou 4 × 4). La logique peut porter sur :</p>`+UL(['l’alternance des couleurs (blanc / noir) ;','le remplissage total du damier ;','le remplissage d’une moitié (gauche / droite ou haut / bas).'])+
+  `<p class="fh">Méthode quand aucun lien n’est flagrant</p>`+OL(['Établir un damier vierge.','Superposer successivement les damiers 1, 2 puis 3.','Chercher la réponse qui représente les cases restées blanches, pour compléter le damier final.']))+
+ P('b. L’horloge',`<p>L’aiguille indique une heure entre 1 et 12 h.</p>`+EX('l’aiguille pointe l’heure écrite sous l’horloge (3 h, 11 h, 7 h) : deux propositions conviennent ; 3, 11 et 7 sont premiers, on tranche avec 2 h.'))+
+ P('c. La boussole',`<p>Directions cardinales (N, E, S, O) et intercardinales (NE, SE, SO, NO).</p>`+NB('Astuce : le mot « Orange » — O est à gauche, E est à droite.')+EX('l’aiguille pointe la direction écrite (N, NE, SE) : deux propositions restent ; le déplacement augmente (N → NE : +45°, NE → SE : +90°), il faut donc +135°, soit une aiguille qui se décale de 3 points intercardinaux.'))+
+ P('d. Symboles et rapports mathématiques',`<p>Chaque symbole ($, *, &, @, #…) représente un nombre fixe : on retrouve la valeur de chaque symbole en résolvant l’équation codée.</p>`+
+  EX('le mouvement de coin en coin élimine deux propositions ; *** = 6 donne * = 2 ; @@* = 12 donne @ = 5 ; @*&& = 13 donne & = 3 ; on garde la proposition dont l’équation est respectée.'))+
+ P('e. Les croix',`<p>Quatre nombres disposés en croix. Deux types de croix, souvent alternés : la croix droite et la croix de Saint-André. Les logiques les plus fréquentes :</p>`+
+  OL(['<b>Somme / produit des 4 nombres</b> : constante (même total à chaque croix) ou croissante.','<b>Égalités croisées</b> : la somme, le produit ou la différence des deux nombres croisés est égale à celle des deux autres (7 + 3 = 9 + 1).','<b>3 termes pour en déduire un 4ᵉ</b> : une relation entre trois nombres donne le quatrième (7 + 1 + 2 = 10) ; repérer aussi la rotation de la croix.'])+
+  NB('Dans deux des trois exemples de croix du cours, l’alternance croix droite / croix de Saint-André permet d’abord d’éliminer des propositions. Dans le troisième, c’est la somme de 3 termes qui élimine, l’alternance ne suffit pas, et c’est la rotation de la croix qui tranche.'))+SRC}
+];
+const FI=Object.fromEntries(F.map(f=>[f.id,f]));
+const TRAIN={'num-intra':1,'num-extra':1,'alpha-intra':1,'alpha-extra':1,'lettres':1,'deplacements':1,'figures':1,'contexte':1};
+
+function list(){
+  $('#lCoursList').innerHTML=`<button class="btn wide" data-fiche="methode" style="width:100%"><span>Méthode de résolution</span><small>l’ordre de test de chaque famille</small></button>`+
+   `<div class="fgrid">`+F.filter(f=>f.id!=='methode').map(f=>`<button class="fcard" data-fiche="${f.id}"><span class="glyph">${f.g}</span><span class="tn">${f.t}</span><span class="ts">${f.s}</span></button>`).join('')+`</div>`;
+}
+function open(id){
+  const f=FI[id];if(!f)return;
+  $('#lcTitle').textContent=f.t;
+  const i=F.indexOf(f),prev=F[i-1],next=F[i+1];
+  $('#lcBody').innerHTML=f.h()+
+    (TRAIN[id]?`<button class="btn alt wide" id="lcTrain" style="width:100%;margin-top:16px"><span>M’entraîner sur ce chapitre</span><small>125 questions</small></button>`:'')+
+    `<div class="fnav">${prev?`<button class="btn ghost" data-fiche="${prev.id}">← ${prev.t}</button>`:'<span></span>'}${next?`<button class="btn ghost" data-fiche="${next.id}">${next.t} →</button>`:'<span></span>'}</div>`;
+  const tb=$('#lcTrain');if(tb)tb.onclick=()=>window.__logicTrain(id);
+  if($('#lcours').hidden){FROM=['lplay','lend'].find(x=>!$('#'+x).hidden)||'lhome';SCROLL=window.scrollY}
+  window.__carnetShow('lcours');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-fiche]');if(!b)return;e.preventDefault();open(b.dataset.fiche)});
+let FROM='lhome',SCROLL=0;
+$('#lcBack').onclick=()=>{if(FROM==='lhome')window.__logicHome();window.__carnetShow(FROM);if(FROM!=='lhome')window.scrollTo(0,SCROLL)};
+list();
+window.__logicFiche=open;
 })();
 
 (function(){let t='home';try{t=localStorage.getItem('carnet-tab')||'home'}catch(e){}
