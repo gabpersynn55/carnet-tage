@@ -569,7 +569,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="label">Fiches de révision <em>tout voir d’un coup d’œil</em></div>
     <div class="lchips" id="learnList"></div>
     <button class="btn ghost wide" id="allSheets" style="margin-top:10px;width:100%"><span>Toutes les fiches sur une page</span><small>12 thèmes</small></button>
-    <p class="cap" style="text-align:center;margin-top:24px!important">Version 13 · 20 oct. 2026</p>
+    <p class="cap" style="text-align:center;margin-top:24px!important">Version 14 · 20 oct. 2026</p>
     <div class="foot" id="resetZone"><button class="link" id="resetBtn">Remettre la progression à zéro</button></div>
   </section>
 
@@ -1108,6 +1108,7 @@ function sheetHTML(id){
     P('<p>a² + b² = c², avec c l’hypoténuse. Tout multiple d’un triplet en est un : 3-4-5 × 2 = 6-8-10, × 3 = 9-12-15, × 4 = 12-16-20, × 5 = 15-20-25.</p>','À savoir')}
   case 'divis':return P(range(2,11).map(k=>`<div class="rule"><b>${k}</b><span>${RULES[k]}<br><span class="ex">${RULE_EX[k]}</span></span></div>`).join(''),'Critères de divisibilité');
   case 'vitesse':return P(`<p class="big">m/s → km/h : <b>× 3,6</b><br>km/h → m/s : <b>÷ 3,6</b></p><p>Car 1 m/s = 3 600 m par heure = 3,6 km/h. Astuce : × 3,6 = × 18 ÷ 5, et ÷ 3,6 = ÷ 18 × 5.</p>`,'La règle')+
+    P(`<p>La méthode exacte la plus rapide de tête consiste à décomposer le calcul, car diviser par 3,6 équivaut à multiplier par <b>10/36</b>. Astuce particulièrement utile pour convertir rapidement des allures de course ou des vitesses de km/h en m/s.</p><p class="fh">La méthode exacte</p><ol class="fo"><li>Divisez le nombre par 4.</li><li>Divisez ce résultat par 9.</li><li>Additionnez ces deux nombres.</li></ol><p class="fex"><b>Exemple avec 72 km/h :</b> 72 ÷ 4 = 18 ; 18 ÷ 9 = 2 ; 18 + 2 = <b>20 m/s</b>.</p><p class="fh">L’approximation ultra-rapide</p><p>En plein effort (comme lors d’un fractionné), quand une précision absolue n’est pas nécessaire :</p><ol class="fo"><li>Divisez le nombre par 4.</li><li>Ajoutez 10 % au résultat.</li></ol><p class="fex"><b>Exemple avec 14,4 km/h :</b> 14,4 ÷ 4 = 3,6 ; on ajoute 10 % de 3,6 (soit 0,36) : 3,6 + 0,36 = <b>3,96</b>. Le résultat exact est 4 : l’approximation est excellente.</p>`,'km/h → m/s de tête')+
     P(`<div class="kv c3">${[5,10,15,20,25,30,40,50,100].map(v=>`<span><b>${v}</b> m/s = ${fmt(v*3.6)} km/h</span>`).join('')}</div>${N('Repère : 10 m/s = 36 km/h')}`,'Valeurs à connaître');
   case 'des':{let g='<div class="scroll"><table class="dice"><tr><th>+</th>'+range(1,6).map(i=>`<th>${i}</th>`).join('')+'</tr>';for(let a=1;a<=6;a++)g+=`<tr><th>${a}</th>`+range(1,6).map(b=>`<td class="s${a+b}">${a+b}</td>`).join('')+'</tr>';g+='</table></div>';
     return P(`<div class="kv c3">${range(2,12).map(s=>{const w=ways(s),c=gcd(w,36);return`<span><b>${s}</b> : ${w}/36${c>1?` = ${w/c}/${36/c}`:''}</span>`}).join('')}</div>${N('1-2-3-4-5-6-5-4-3-2-1, sommet en 7')}`,'Probabilité de chaque somme')+
