@@ -542,6 +542,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .fnav .btn{font-size:13.5px;padding:12px;align-items:center;text-align:center}
 .lmeth .link{padding:4px 0;font-size:12.5px;color:var(--accent);font-weight:600}
 
+
+.ltools{display:flex;gap:8px;margin:0 0 10px}
+.chint .ho{display:block;margin-top:8px;font-size:13px;color:var(--ink-soft);line-height:1.45}
+.chint .ho b{color:var(--ink);font-weight:700}
+.lsum summary .htag,.lverdict .htag{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 8px;vertical-align:middle}
 /* ================= Onglet Calcul (thème v11) ================= */
 #tabbar .tabs{grid-template-columns:repeat(3,1fr)}
 .tab{gap:6px;padding:10px 4px}
@@ -692,7 +697,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="label">Fiches de révision <em>tout voir d’un coup d’œil</em></div>
     <div class="lchips" id="learnList"></div>
     <button class="btn ghost wide" id="allSheets" style="margin-top:10px;width:100%"><span>Toutes les fiches sur une page</span><small>12 thèmes</small></button>
-    <p class="cap" style="text-align:center;margin-top:24px!important">Version 19 · 22 oct. 2026</p>
+    <p class="cap" style="text-align:center;margin-top:24px!important">Version 20 · 22 oct. 2026</p>
     <div class="foot" id="resetZone"><button class="link" id="resetBtn">Remettre la progression à zéro</button></div>
   </section>
 
@@ -796,7 +801,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="lq">
       <div class="lqtag"><b id="lqChap"></b><span id="lqNum"></span></div>
       <div class="lqhint" id="lqHint"></div>
+      <div class="ltools"><button class="cdbtn chbtn" id="lHintBtn" aria-pressed="false" aria-controls="lHint"><span class="ic">💡</span><span id="lHintLab">Méthode</span></button></div>
       <div id="lqBoard"></div>
+      <div class="chint" id="lHint" hidden></div>
     </div>
     <div class="lopts" id="lOpts"></div>
     <div class="lcorr" id="lCorr" hidden></div>
@@ -2063,18 +2070,43 @@ function nextL(){
     $('#lOpts').className='lopts lf';
     $('#lOpts').innerHTML=q.o.map((o,i)=>`<button class="lo" data-i="${i}"><span class="frm">${svgFrame(o)}</span><span class="k">${'abcde'[i]})</span></button>`).join('');
   }
-  $('#lCorr').hidden=true;$('#lNextWrap').hidden=true;
+  $('#lCorr').hidden=true;$('#lNextWrap').hidden=true;setLHint(false);
   window.scrollTo(0,0);
 }
 function fmt(s){return esc(s).replace(/([A-Za-z0-9]+)\^([A-Za-z0-9]+)/g,'$1<sup>$2</sup>')}
+/* ---- 💡 Méthode : indice à la demande (cours uniquement, sans réponse) ---- */
+const LH_X='Le terme « ? » doit respecter à la fois la logique de la ligne et celle de la colonne. Trouve chaque logique : chacune permet d’éliminer des réponses. La bonne réponse est la seule qui satisfait les deux logiques simultanément.';
+const LH_ORD={
+ 'num-extra':['Ordre à suivre (cours)','Colonne → Petite diagonale (C1–C2, C2–C3…) → Moyenne diagonale (C1–C2–C3–C2–C1) → Grande diagonale (C1–C3–C1–C3) → Somme des chiffres → Produit des chiffres. Pour chaque déplacement : variations nulles, constantes, croissantes, alternées. Les variations peuvent se lire du haut vers le bas ou du bas vers le haut.'],
+ 'alpha-intra':['Ordre de résolution (cours)','Les barres → Les voyelles / consonnes → Écart mathématique interne → Mot palindromique → Produit / somme des rangs constant → Logiques internes rares (mot existant ou acronyme, chiffres romains).'],
+ 'alpha-extra':['Ordre de résolution (cours)','Variation des rangs → Somme / produit des rangs → Déplacement de voyelles → Lettres symétriques → Somme / produit des barres. Les variations peuvent se lire du haut vers le bas ou du bas vers le haut.'],
+ 'num-intra':['À passer en revue (le cours ne donne pas d’ordre)','Carrés / cubes (y compris inversés) → Multiples (y compris inversés) → Nombres premiers (y compris inversés) → Somme ou produit des chiffres constant → Nombres palindromiques → Somme interne → Produit interne → Produit interne fictif → Puissance → Puissance fictive → Écart interne.'],
+ 'lettres':['Les 5 façons de lire une lettre (cours)','Rang alphabétique → Nombre de barres → Voyelle / consonne → Symétrie → Initiale.'],
+ 'figures':['Les 4 façons de lire une figure (cours)','Le nombre de côtés → Le nombre de côtés parallèles → Le nombre d’angles droits → Le nombre d’intersections.'],
+ 'deplacements':['Les types de déplacement (cours)','Linéaire (horaire, anti-horaire) → Diagonales → Déplacement croissant (arithmétique ou géométrique) → Haut-bas / gauche-droite (avec ou sans case milieu) → Axe symétrique.'],
+ 'contexte':['Les logiques contextuelles (cours)','Damiers → Horloge → Boussole → Symboles et rapports mathématiques → Croix.']};
+const LH_F='Le cours ne donne pas d’ordre de test pour les graphiques. Il présente ce qu’il faut regarder (ci-dessous) ; chaque logique permet d’éliminer des réponses.';
+function lhPretty(m){return m.replace(/decroissante/g,'décroissante').replace(/alternee/g,'alternée')}
+function lHintHTML(q){
+  const o=LH_ORD[q.c];
+  const chips=q.k==='x'?[`Ligne : ${lhPretty(q.m[0])}`,`Colonne : ${lhPretty(q.m[1])}`]:q.m.map(m=>`Logique du cours : ${lhPretty(m)}`);
+  return `<span class="hl">Méthode</span><span class="hx">${esc(q.k==='x'?LH_X:LH_F)}</span>`+
+    (o?`<span class="ho"><b>${esc(o[0])} :</b> ${esc(o[1])}</span>`:'')+
+    `<div class="hr">${chips.map(c=>`<span>${esc(c)}</span>`).join('')}</div><button class="hf" data-fiche="${q.c}">Ouvrir la fiche du chapitre →</button>`}
+function setLHint(on){const b=$('#lHintBtn');b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);
+  $('#lHintLab').textContent=on?'Masquer la méthode':'Méthode';
+  const p=$('#lHint');if(on&&S&&S.q){p.innerHTML=lHintHTML(S.q);if(!S.locked){S.hinted=S.hinted||{};S.hinted[S.q.id]=1}}p.hidden=!on}
+$('#lHintBtn').onclick=()=>setLHint($('#lHint').hidden);
+
 function corrHTML(q,ok){
-  return (ok===undefined?'':`<div class="lverdict ${ok?'ok':'ko'}">${ok?'Bonne réponse !':'Raté : la bonne réponse est '+'abcde'[q.a]+')'}</div>`)+
+  const ht=S&&S.hinted&&S.hinted[q.id]?'<span class="htag">💡 avec la méthode</span>':'';
+  return (ok===undefined?'':`<div class="lverdict ${ok?'ok':'ko'}">${ok?'Bonne réponse !':'Raté : la bonne réponse est '+'abcde'[q.a]+')'}${ht}</div>`)+
     q.s.map(([t,x])=>`<div class="lstep${t==='Réponse'?' ans':''}"><span class="st">${esc(t)}</span><span class="sx">${fmt(x)}</span></div>`).join('')+
     `<div class="lmeth">Méthode du cours : ${q.m.map(m=>`<span>${esc(m)}</span>`).join('')} <button class="link" data-fiche="${q.c}">Revoir la fiche du chapitre →</button></div>`;
 }
 function answerL(i){
   if(!S||S.locked)return;S.locked=true;const q=S.q;const ok=i===q.a;
-  rec(q.id,ok);S.n++;if(ok)S.score++;S.results.push({id:q.id,ok,c:q.c});
+  rec(q.id,ok);S.n++;if(ok)S.score++;S.results.push({id:q.id,ok,c:q.c,h:!!(S.hinted&&S.hinted[q.id])});
   document.querySelectorAll('#lOpts .lo').forEach((b,k)=>{b.classList.add(k===q.a?'right':k===i?'wrong':'dim')});
   $('#lHudScore').textContent=`${S.score}/${S.n}`;
   if(S.mode==='serie'){setTimeout(nextL,ok?450:900);return}
@@ -2089,9 +2121,10 @@ function endL(){
   $('#lEndHand').textContent=acc>=85?'Très solide.':acc>=65?'Bien, on consolide.':acc>=40?'Ça vient, continue.':'Relis la correction de chaque erreur.';
   $('#lEScore').textContent=sc;$('#lEAcc').textContent=acc+' %';$('#lETime').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
   const by={};for(const r of S.results){(by[r.c]=by[r.c]||[0,0]);by[r.c][1]++;if(r.ok)by[r.c][0]++}
-  let h=CHAP.filter(c=>by[c.id]).map(c=>`<div class="mi"><span class="a">${c.name}</span><span class="b">${by[c.id][0]}/${by[c.id][1]}</span></div>`).join('');
+  const nh=S.results.filter(r=>r.h).length;
+  let h=(nh?`<div class="mi"><span class="a">💡 Méthode consultée</span><span class="b">${nh} question${nh>1?'s':''}</span></div>`:'')+CHAP.filter(c=>by[c.id]).map(c=>`<div class="mi"><span class="a">${c.name}</span><span class="b">${by[c.id][0]}/${by[c.id][1]}</span></div>`).join('');
   const wrong=S.results.filter(r=>!r.ok);
-  if(wrong.length){h+=`<div class="label">Corrections de tes erreurs</div>`+wrong.map(r=>{const q=QI[r.id];return `<details class="lcorr"><summary><b>n° ${q.id}</b> · ${esc(CH[q.c].name)} · ${esc(q.tag)}</summary>${corrHTML(q)}</details>`}).join('')}
+  if(wrong.length){h+=`<div class="label">Corrections de tes erreurs</div>`+wrong.map(r=>{const q=QI[r.id];return `<details class="lcorr"><summary><b>n° ${q.id}</b> · ${esc(CH[q.c].name)} · ${esc(q.tag)}${r.h?'<span class="htag">💡</span>':''}</summary>${corrHTML(q)}</details>`}).join('')}
   $('#lESum').innerHTML=h;$('#lEErr').disabled=!errIds().length;
   S.last=S.mode;window.__carnetShow('lend');
 }
